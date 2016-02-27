@@ -49,7 +49,7 @@ THE SOFTWARE.
 using namespace std;
 
 namespace cocos2d {
-
+#define BPS_EVENTS
 bool CCEGLView::m_initializedFunctions = false;
 const GLubyte *CCEGLView::m_extensions = 0;
 
@@ -116,6 +116,59 @@ CCEGLView::CCEGLView()
     if (m_isGLInitialized)
     	initEGLFunctions();
 }
+CCEGLView::CCEGLView(const std::string & group,const std::string &id,int w,int h)
+    : m_pDelegate(NULL), m_pEventHandler(NULL),
+      m_fScreenScaleFactor(1.0),
+      m_bNotHVGA(false),
+      m_isWindowActive(false)
+{
+    s_pInstance = this;
+
+    m_eglDisplay = EGL_NO_DISPLAY;
+    m_eglContext = EGL_NO_CONTEXT;
+    m_eglSurface = EGL_NO_SURFACE;
+    m_screenEvent = 0;
+    m_screenWindow = 0;
+
+    strcpy(m_window_group_id, "");
+    snprintf(m_window_group_id, sizeof(m_window_group_id), "%d", getpid());
+    //bps_initialize();
+    navigator_request_events(0);
+
+    navigator_rotation_lock(true);
+
+    the_configAttr.surface_type = EGL_WINDOW_BIT;
+    the_configAttr.red_size     = EGL_DONT_CARE;
+    the_configAttr.green_size   = EGL_DONT_CARE;
+    the_configAttr.blue_size    = EGL_DONT_CARE;
+    the_configAttr.alpha_size   = EGL_DONT_CARE;
+    the_configAttr.samples      = EGL_DONT_CARE;
+    the_configAttr.config_id    = EGL_DONT_CARE;
+
+    m_view =  new OpenGLView(group,id,w,h);
+    m_isGLInitialized =  m_view->m_initialized;
+    this->m_eglContext =  m_view->m_egl_ctx;
+    this->m_eglDisplay =  m_view->m_egl_disp;
+    this->m_eglSurface =  m_view->m_egl_surf;
+    this->m_screenContext =  m_view->m_screen_ctx;
+    this->m_screenWindow =  m_view->m_screen_win;
+
+
+    EGLint width, height;
+
+    if ((m_eglDisplay == EGL_NO_DISPLAY) || (m_eglSurface == EGL_NO_SURFACE) )
+        return ;
+
+    eglQuerySurface(m_eglDisplay, m_eglSurface, EGL_WIDTH, &width);
+    eglQuerySurface(m_eglDisplay, m_eglSurface, EGL_HEIGHT, &height);
+
+    m_sSizeInPixel.width = width;
+    m_sSizeInPixel.height = height;
+
+    if (m_isGLInitialized)
+           initEGLFunctions();
+
+}
 
 CCEGLView::~CCEGLView()
 {
@@ -164,7 +217,7 @@ bool CCEGLView::Create(int width, int height)
 	m_sSizeInPoint.width = width;
 	m_sSizeInPoint.height = height;
 
-	// calculate the factor and the rect of viewport	
+	// calculate the factor and the rect of viewport
 	m_fScreenScaleFactor =  MIN((float)m_sSizeInPixel.width / m_sSizeInPoint.width,
 		                        (float)m_sSizeInPixel.height / m_sSizeInPoint.height);
 
@@ -175,9 +228,9 @@ bool CCEGLView::Create(int width, int height)
 	m_rcViewPort.origin.y = (m_sSizeInPixel.height - viewPortH) / 2;
 	m_rcViewPort.size.width = viewPortW;
 	m_rcViewPort.size.height = viewPortH;
-	
+
 	m_bNotHVGA = true;
-	
+
 	return true;
 }
 
@@ -923,8 +976,9 @@ bool CCEGLView::HandleEvents()
 					break;
 			}
 		}
-		}
+
 #ifndef BPS_EVENTS
+        }
 		// for now handle screen events separately from BPS events
 		if (screen_get_event(m_screenContext, m_screenEvent, 0) < 0)
 		{
@@ -1161,7 +1215,7 @@ bool CCEGLView::canSetContentScaleFactor()
 void CCEGLView::setContentScaleFactor(float contentScaleFactor)
 {
 	m_fScreenScaleFactor = contentScaleFactor;
-} 
+}
 
 void CCEGLView::setViewPortInPoints(float x, float y, float w, float h)
 {
@@ -1179,7 +1233,7 @@ void CCEGLView::setViewPortInPoints(float x, float y, float w, float h)
 					(GLint)y,
 					(GLint)w,
 					(GLint)h);
-    }		
+    }
 }
 
 void CCEGLView::setScissorInPoints(float x, float y, float w, float h)

@@ -30,6 +30,9 @@ THE SOFTWARE.
 #include <GLES/glext.h>
 #include <EGL/egl.h>
 #include <screen/screen.h>
+#include "OpenGLView.h"
+
+
 
 #include <bps/event.h>
 namespace   cocos2d {
@@ -49,6 +52,7 @@ class CC_DLL EventHandler
 	};
 public:
     CCEGLView();
+    CCEGLView(const std::string & group,const std::string &id,int width,int height);
     virtual ~CCEGLView();
 
     CCSize  getSize();
@@ -59,12 +63,12 @@ public:
 	 */
     void    setFrameWidthAndHeight(int width, int height);
 	/**
-	 * create a drawing rect, 
+	 * create a drawing rect,
 	 * the width and heiht is the resource size match best
 	 */
 	bool    Create(int width, int height);
     EGLTouchDelegate* getDelegate(void);
-    
+
 	void    setEventHandler(EventHandler* pHandler);
     const char* getWindowGroupId() const;
     // keep compatible
@@ -72,13 +76,14 @@ public:
     void    setTouchDelegate(EGLTouchDelegate * pDelegate);
     void    swapBuffers();
     bool    canSetContentScaleFactor();
-    void    setContentScaleFactor(float contentScaleFactor); 
+    void    setContentScaleFactor(float contentScaleFactor);
 	void    setViewPortInPoints(float x, float y, float w, float h);
     void    setScissorInPoints(float x, float y, float w, float h);
 	CCRect  getViewPort();
 	float   getScreenScaleFactor();
+	screen_context_t getScreenContext(){return m_screenContext;}
     void    setIMEKeyboardState(bool bOpen);
-    
+
     float   getMainScreenScale() { return 1.0f; }
 
     bool 	HandleEvents();
@@ -115,7 +120,7 @@ private:
 	CCRect  			m_rcViewPort;
 	bool    			m_bNotHVGA;
 	bool				m_isGLInitialized;
-	
+
 	EventHandler*		m_pEventHandler;
 	EGLTouchDelegate   *m_pDelegate;
 	float  				m_fScreenScaleFactor;
@@ -131,6 +136,7 @@ private:
     screen_event_t 	 m_screenEvent;
     screen_window_t  m_screenWindow;
     screen_context_t m_screenContext;
+    OpenGLView* m_view;
     char 			 m_window_group_id[16];
 };
 
