@@ -45,7 +45,7 @@ typedef struct _listEntry
 	int				    priority;
 	bool				paused;
 	bool				markedForDeletion; // selector will no longer be called and entry will be removed at end of the next tick
-	
+
 } tListEntry;
 
 typedef struct _hashUpdateEntry
@@ -157,6 +157,7 @@ void CCTimer::update(ccTime dt)
 		}
         m_fElapsed = 0;
 	}
+
 }
 
 
@@ -176,6 +177,7 @@ CCScheduler::CCScheduler(void)
 , m_pScriptHandlerEntries(NULL)
 {
 	CCAssert(pSharedScheduler == NULL, "");
+	 _functionsToPerform.reserve(30);
 }
 
 CCScheduler::~CCScheduler(void)
@@ -259,7 +261,7 @@ void CCScheduler::scheduleSelector(SEL_SCHEDULE pfnSelector, CCObject *pTarget, 
 	{
 		pElement->timers = ccArrayNew(10);
 	}
-	else 
+	else
 	{
 		for (unsigned int i = 0; i < pElement->timers->num; ++i)
 		{
@@ -270,7 +272,7 @@ void CCScheduler::scheduleSelector(SEL_SCHEDULE pfnSelector, CCObject *pTarget, 
 				CCLOG("CCSheduler#scheduleSelector. Selector already scheduled.");
 				timer->m_fInterval = fInterval;
 				return;
-			}		
+			}
 		}
 		ccArrayEnsureExtraCapacity(pElement->timers, 1);
 	}
@@ -278,7 +280,7 @@ void CCScheduler::scheduleSelector(SEL_SCHEDULE pfnSelector, CCObject *pTarget, 
 	CCTimer *pTimer = new CCTimer();
 	pTimer->initWithTarget(pTarget, pfnSelector, fInterval);
 	ccArrayAppendObject(pElement->timers, pTimer);
-	pTimer->release();	
+	pTimer->release();
 }
 
 void CCScheduler::unscheduleSelector(SEL_SCHEDULE pfnSelector, CCObject *pTarget)
@@ -637,7 +639,16 @@ bool CCScheduler::isTargetPaused(CCObject *pTarget)
     }
     return false;  // should never get here
 }
+void CCScheduler::performFunctionInCocosThread(function f,void* data){
 
+    pthread_mutex_lock(&_performMutex);
+    struct functionData fd;
+    fd.f = f;
+    fd.data =  data;
+    _functionsToPerform.push_back(fd);
+
+    pthread_mutex_unlock(&_performMutex);
+}
 // main loop
 void CCScheduler::tick(ccTime dt)
 {
@@ -665,7 +676,7 @@ void CCScheduler::tick(ccTime dt)
 	{
 		if ((! pEntry->paused) && (! pEntry->markedForDeletion))
 		{
-			pEntry->target->update(dt);			
+			pEntry->target->update(dt);
 		}
 	}
 
@@ -674,7 +685,7 @@ void CCScheduler::tick(ccTime dt)
 	{
 		if ((! pEntry->paused) && (! pEntry->markedForDeletion))
 		{
-			pEntry->target->update(dt);			
+			pEntry->target->update(dt);
 		}
 	}
 
@@ -762,6 +773,23 @@ void CCScheduler::tick(ccTime dt)
 		}
 	}
 
+	//
+    // Functions allocated from another thread
+    //
+
+    // Testing size is faster than locking / unlocking.
+    // And almost never there will be functions scheduled to be called.
+    if( !_functionsToPerform.empty() ) {
+        pthread_mutex_lock(&_performMutex);
+        // fixed #4123: Save the callback functions, they must be invoked after '_performMutex.unlock()', otherwise if new functions are added in callback, it will cause thread deadlock.
+        std::vector<functionData> temp = _functionsToPerform;
+        _functionsToPerform.clear();
+        pthread_mutex_unlock(&_performMutex);
+        for( std::vector<functionData>::iterator it =  temp.begin() ;it!=temp.end();it++) {
+            it->f(it->data);
+        }
+
+    }
 	m_bUpdateHashLocked = false;
 
 	m_pCurrentTarget = NULL;
@@ -772,4 +800,4 @@ void CCScheduler::purgeSharedScheduler(void)
 	pSharedScheduler->release();
 	pSharedScheduler = NULL;
 }
-}//namespace   cocos2d 
+}//namespace   cocos2d

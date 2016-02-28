@@ -29,9 +29,16 @@ THE SOFTWARE.
 
 #include "CCObject.h"
 #include "support/data_support/uthash.h"
+#include <pthread.h>
+#include <vector>
+
 
 namespace   cocos2d {
-
+typedef  void (*function)(void*);
+struct functionData{
+    function f;
+    void* data;
+};
 //
 // CCTimer
 //
@@ -71,6 +78,8 @@ public:
 public:
 	SEL_SCHEDULE m_pfnSelector;
 	ccTime m_fInterval;
+
+
 
 protected:
 	CCObject *m_pTarget;
@@ -156,14 +165,14 @@ public:
 	 @since v0.99.3
 	 */
 	void unscheduleAllSelectors(void);
-    
+
     /** The scheduled script callback will be called every 'interval' seconds.
 	 If paused is YES, then it won't be called until it is resumed.
 	 If 'interval' is 0, it will be called every frame.
      return schedule script entry ID, used for unscheduleScriptFunc().
      */
     unsigned int scheduleScriptFunc(int nHandler, ccTime fInterval, bool bPaused);
-    
+
 	/** Unschedule a script entry. */
     void unscheduleScriptEntry(unsigned int uScheduleScriptEntryID);
 
@@ -194,6 +203,7 @@ public:
 	 @since v0.99.0
 	 */
 	static void purgeSharedScheduler(void);
+	void performFunctionInCocosThread(function f,void* data);
 
 private:
 	void removeHashElement(struct _hashSelectorEntry *pElement);
@@ -208,6 +218,11 @@ private:
 
 protected:
 	ccTime m_fTimeScale;
+
+
+    // Used for "perform Function"
+    std::vector<functionData> _functionsToPerform;
+    pthread_mutex_t _performMutex;
 
 	//
 	// "updates with priority" stuff
