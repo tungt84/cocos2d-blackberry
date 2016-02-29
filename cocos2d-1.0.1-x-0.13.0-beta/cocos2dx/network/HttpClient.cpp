@@ -122,7 +122,7 @@ void HttpClient::networkThread()
                 pthread_cond_wait(&s_SleepCondition,&s_requestQueueMutex);
             }
             request = s_requestQueue->at(0);
-            s_requestQueue->erase(0);
+            s_requestQueue->erase(s_requestQueue->begin());
         }
 
         if (request == s_requestSentinel) {
@@ -562,7 +562,7 @@ void HttpClient::dispatchResponseCallbacks()
     if (!s_responseQueue->empty())
     {
         response = s_responseQueue->at(0);
-        s_responseQueue->erase(0);
+        s_responseQueue->erase(s_responseQueue->begin());
     }
 
     pthread_mutex_unlock(&s_responseQueueMutex);

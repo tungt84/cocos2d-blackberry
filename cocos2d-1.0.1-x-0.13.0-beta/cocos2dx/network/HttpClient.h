@@ -127,20 +127,21 @@ public:
      */
     inline int getTimeoutForRead() {return _timeoutForRead;};
 
-public: static void *networkThreadHelper(void *context){
-            ((HttpClient*)context)->networkThread();
-        }
-static void *networkThreadAloneHelper(void *context){
-    struct networkThreadAloneData* data =(struct networkThreadAloneData*) context;
-    ((HttpClient*)data->target)->networkThreadAlone(data->request,data->response);
-}
-static void networkThreadAloneCallbackHelper(void *context){
-    struct networkThreadAloneData* data =(struct networkThreadAloneData*) context;
-        ((HttpClient*)data->target)->networkThreadAloneCallback(data->request,data->response);
-}
-static void dispatchResponseCallbacksHelper(void *context){
-    ((HttpClient*)context)->dispatchResponseCallbacks();
-}
+public:
+    static void *networkThreadHelper(void *context){
+         ((HttpClient*)context)->networkThread();
+    }
+    static void *networkThreadAloneHelper(void *context){
+        struct networkThreadAloneData* data =(struct networkThreadAloneData*) context;
+        ((HttpClient*)data->target)->networkThreadAlone(data->request,data->response);
+    }
+    static void networkThreadAloneCallbackHelper(void *context){
+        struct networkThreadAloneData* data =(struct networkThreadAloneData*) context;
+            ((HttpClient*)data->target)->networkThreadAloneCallback(data->request,data->response);
+    }
+    static void dispatchResponseCallbacksHelper(void *context){
+        ((HttpClient*)context)->dispatchResponseCallbacks();
+    }
 private:
     HttpClient();
     virtual ~HttpClient();
