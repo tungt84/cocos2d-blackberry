@@ -74,7 +74,7 @@ To enabled set it to 1. Disabled by default.
  To enable set it to a value different than 0. Enabled by default.
  */
 #ifndef CC_DIRECTOR_FAST_FPS
-#define CC_DIRECTOR_FAST_FPS	1
+#define CC_DIRECTOR_FAST_FPS	0
 #endif
 
 /** @def CC_DIRECTOR_FPS_INTERVAL
