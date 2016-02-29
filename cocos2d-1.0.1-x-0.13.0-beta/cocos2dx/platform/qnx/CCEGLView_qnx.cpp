@@ -49,7 +49,7 @@ THE SOFTWARE.
 using namespace std;
 
 namespace cocos2d {
-#define BPS_EVENTS
+
 bool CCEGLView::m_initializedFunctions = false;
 const GLubyte *CCEGLView::m_extensions = 0;
 
