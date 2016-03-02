@@ -13,6 +13,13 @@
 #include "network/HttpResponse.h"
 #include "network/HttpCookie.h"
 
+#include <iostream>
+#include <sstream>
+#include <string>
+
+using std::cout;
+using std::endl;
+
 NS_CC_BEGIN;
 
 #ifndef COCOS2D_VERSION_1X
@@ -44,6 +51,33 @@ NS_CC_BEGIN;
 #define HttpRequest_GET cocos2d::network::HttpRequest::Type::GET
 #define HttpRequest_ResponseCallbackSelector(SELECTOR,TARGER) CC_CALLBACK_2(SELECTOR,TARGET)
 #endif
+
+
+
+std::string urlencode(const std::string &s)
+{
+    static const char lookup[]= "0123456789abcdef";
+    std::stringstream e;
+    for(int i=0, ix=s.length(); i<ix; i++)
+    {
+        const char& c = s[i];
+        if ( (48 <= c && c <= 57) ||//0-9
+             (65 <= c && c <= 90) ||//abc...xyz
+             (97 <= c && c <= 122) || //ABC...XYZ
+             (c=='-' || c=='_' || c=='.' || c=='~')
+        )
+        {
+            e << c;
+        }
+        else
+        {
+            e << '%';
+            e << lookup[ (c&0xF0)>>4 ];
+            e << lookup[ (c&0x0F) ];
+        }
+    }
+    return e.str();
+}
 
 NS_CC_END;
 

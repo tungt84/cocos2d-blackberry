@@ -22,6 +22,14 @@ enum SmaatoAdspaceSize {
     MMA_XLarge,//300x50
     MMA_XXLarge//320x50
 };
+enum SmaatoFormat{
+    SF_all,
+    SF_img,
+    SF_txt,
+    SF_richmedia,
+    SF_vast,
+    SF_native
+};
 #define SMA_URL "http://soma.smaato.net/oapi/reqAd.jsp"
 class Smaato:public CCObject
 {
@@ -31,7 +39,11 @@ public:
     void requestAds();
     void getAdsCallback(HttpClient* client, HttpResponse* response);
 protected:
-
+    int apiver;
+    int adspace;
+    int pub;
+    char* device;
+    SmaatoFormat format;
 };
 NS_CC_END;
 #endif /* SMAATO_H_ */
