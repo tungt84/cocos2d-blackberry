@@ -20,7 +20,7 @@ using namespace cocos2d::network;
 #define SMA_URL "http://soma.smaato.net/oapi/reqAd.jsp"
 #define REFRESH_TIME 60
 NS_CC_BEGIN
-
+typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
     enum SmaatoAdspaceSize
     {
         MMA_Small, //120x20
@@ -59,6 +59,7 @@ NS_CC_BEGIN
         void downloadBeacons(std::vector<char*>* beacons);
         void downloadBeacon(char* beacon);
         void update(float dt);
+        void setTargetLinkCallback(Ref* pTarget, SEL_TargetLink pSelector);
 
         virtual bool init();
         virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
@@ -91,6 +92,8 @@ NS_CC_BEGIN
         bool scheduled;
         char* target;
         CCSprite* sprite;
+        Ref*                        _pTarget;        /// callback target of pSelector function
+        SEL_TargetLink            _pSelector;      /// callback function, e.g. MyLayer::onTargetLink(const char* target)
 
     };
     class SmaatoDownloadBeancon: public Ref

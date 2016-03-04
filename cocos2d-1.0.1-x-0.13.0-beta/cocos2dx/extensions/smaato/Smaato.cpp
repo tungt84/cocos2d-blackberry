@@ -31,6 +31,18 @@ NS_CC_BEGIN
         adsStatusMutex = PTHREAD_MUTEX_INITIALIZER;
         target = NULL;
         sprite = NULL;
+        _pTarget = NULL;
+        _pSelector = NULL;
+    }
+    void Smaato::setTargetLinkCallback(Ref* pTarget, SEL_TargetLink pSelector)
+    {
+        _pTarget = pTarget;
+        _pSelector = pSelector;
+
+        if (_pTarget) {
+            _pTarget->retain();
+        }
+
     }
     bool Smaato::init()
     {
@@ -62,7 +74,7 @@ NS_CC_BEGIN
     }
     void Smaato::stopAds()
     {
-        this->unscheduleAllSelectors();
+        //this->unscheduleAllSelectors();
         requestedAds = false;
         adsStatus = ADS_Ready;
         setIsVisible(false);
@@ -225,11 +237,16 @@ NS_CC_BEGIN
     }
     bool Smaato::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
     {
-        if (sprite != NULL) {
-            CCPoint location = convertTouchToNodeSpace(pTouch);
-            if (CCRect::CCRectContainsPoint(sprite->boundingBox(), location)) {
-                //TODO excecute link target
-                return true;
+        if (requestedAds) {
+            if (sprite != NULL && target != NULL) {
+                CCPoint location = convertTouchToNodeSpace(pTouch);
+                if (CCRect::CCRectContainsPoint(sprite->boundingBox(), location)) {
+                    if(_pSelector&&_pTarget){
+                        (_pTarget->*_pSelector)(target);
+                    }
+
+                    return true;
+                }
             }
         }
         return false;
@@ -247,8 +264,10 @@ NS_CC_BEGIN
     {
         setTarget(target);
         adsStatus = ADS_Ready;
-        setIsVisible(true);
-        setIsTouchEnabled(true);
+        if (requestedAds) {
+            setIsVisible(true);
+            setIsTouchEnabled(true);
+        }
         //sprite->setAnchorPoint(ccp(0.5, 1));
         //sprite->setAnchorPoint(ccp(0,0));
 
@@ -326,6 +345,9 @@ NS_CC_BEGIN
     Smaato::~Smaato()
     {
         CC_SAFE_DELETE_ARRAY(this->target);
+        if (_pTarget) {
+            _pTarget->release();
+        }
     }
     void SmaatoDownloadBeancon::downloadBeacon(HttpClient* client, HttpResponse* response)
     {
