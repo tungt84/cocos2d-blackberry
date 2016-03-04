@@ -28,6 +28,9 @@ NS_CC_BEGIN
         adsStatus = ADS_init;
         duration = 0;
         scheduled = false;
+        adsStatusMutex = PTHREAD_MUTEX_INITIALIZER;
+        target = NULL;
+        sprite = NULL;
     }
     bool Smaato::init()
     {
@@ -43,88 +46,120 @@ NS_CC_BEGIN
     }
     void Smaato::update(float dt)
     {
-        duration += dt;
-        if (duration > REFRESH_TIME) {
-            duration = 0;
-            if (requestedAds) {
-                if (adsStatus == ADS_Ready || adsStatus == ADS_init) {
-                    requestAds();
+        if (requestedAds && adsStatus == ADS_init) { //first time
+            requestAdsInternal();
+        } else {
+            duration += dt;
+            if (duration > REFRESH_TIME) { //need to refresh
+                duration = 0;
+                if (requestedAds) {
+                    if (adsStatus == ADS_Ready) {
+                        requestAdsInternal();
+                    }
                 }
             }
         }
     }
     void Smaato::stopAds()
     {
-        requestedAds = false;
         this->unscheduleAllSelectors();
+        requestedAds = false;
+        adsStatus = ADS_Ready;
         setIsVisible(false);
         setIsTouchEnabled(false);
+    }
+    void Smaato::requestAdsInternal()
+    {
+        bool run = false;
+        pthread_mutex_lock(&adsStatusMutex);
+        if (adsStatus == ADS_init || adsStatus == ADS_Ready) {
+            adsStatus = ADS_Requesting;
+            run = true;
+        }
+        pthread_mutex_unlock(&adsStatusMutex);
+        if (run) {
+            cocos2d::network::HttpRequest* request = new cocos2d::network::HttpRequest();
+            cocos2d::network::HttpClient::getInstance()->enableCookies(NULL);
+            //build request
+            char buffer[33];
+            std::string url(SMA_URL);
+
+            sprintf(buffer, "%d", adspace);
+            url.append("?adspace=").append(buffer);
+
+            sprintf(buffer, "%d", pub);
+            url.append("&pub=").append(buffer);
+
+            url.append("&device=").append(urlencode(std::string(device)));
+
+            switch (format) {
+                case SF_all:
+                    url.append("&format=").append("all");
+                    break;
+                case SF_img:
+                    url.append("&format=").append("img");
+                    break;
+                case SF_native:
+                    url.append("&format=").append("native");
+                    break;
+                case SF_richmedia:
+                    url.append("&format=").append("richmedia");
+                    break;
+                case SF_txt:
+                    url.append("&format=").append("txt");
+                    break;
+                case SF_vast:
+                    url.append("&format=").append("vast");
+                    break;
+            }
+
+            url.append("&response=XML");
+
+            request->setUrl(url.c_str());
+            fprintf(stderr, "\nurl: %s", url.c_str());
+            request->setRequestType(HttpRequest_GET);
+            SmaatoAdsRequestCallback* callback = new SmaatoAdsRequestCallback(this);
+            request->setResponseCallback(
+                    HttpRequest_ResponseCallbackSelector(SmaatoAdsRequestCallback::getAdsCallback,
+                            callback));
+            request->setTag("Request Ads");
+            cocos2d::network::HttpClient::getInstance()->send(request);
+            request->release();
+        }
     }
     void Smaato::requestAds()
     {
         requestedAds = true;
-        adsStatus = ADS_Requesting;
         if (!scheduled) {
-            this->schedule(schedule_selector(Smaato::update));
             scheduled = true;
-        }
-        cocos2d::network::HttpRequest* request = new cocos2d::network::HttpRequest();
-        cocos2d::network::HttpClient::getInstance()->enableCookies(NULL);
-        //build request
-        char buffer[33];
-        std::string url(SMA_URL);
-
-        sprintf(buffer, "%d", adspace);
-        url.append("?adspace=").append(buffer);
-
-        sprintf(buffer, "%d", pub);
-        url.append("&pub=").append(buffer);
-
-        url.append("&device=").append(urlencode(std::string(device)));
-
-        switch (format) {
-            case SF_all:
-                url.append("&format=").append("all");
-                break;
-            case SF_img:
-                url.append("&format=").append("img");
-                break;
-            case SF_native:
-                url.append("&format=").append("native");
-                break;
-            case SF_richmedia:
-                url.append("&format=").append("richmedia");
-                break;
-            case SF_txt:
-                url.append("&format=").append("txt");
-                break;
-            case SF_vast:
-                url.append("&format=").append("vast");
-                break;
+            this->schedule(schedule_selector(Smaato::update));
         }
 
-        url.append("&response=XML");
-
-        request->setUrl(url.c_str());
-        fprintf(stderr, "\nurl: %s", url.c_str());
-        request->setRequestType(HttpRequest_GET);
-        SmaatoAdsRequestCallback* callback = new SmaatoAdsRequestCallback(this);
-        request->setResponseCallback(
-                HttpRequest_ResponseCallbackSelector(SmaatoAdsRequestCallback::getAdsCallback,
-                        callback));
-        request->setTag("Request Ads");
-        cocos2d::network::HttpClient::getInstance()->send(request);
-        request->release();
     }
     void Smaato::getAdsCallback(HttpClient* client, HttpResponse* response)
     {
+        if (!response) {
+            adsStatus = ADS_Ready;
+            CCLOG("onHttpRequestCompleted - No Response");
+            return;
+        }
+
+        CCLOG("onHttpRequestCompleted - Response code: %lu", response->getResponseCode());
+
+        if (!response->isSucceed()) {
+            adsStatus = ADS_Ready;
+            CCLOG("onHttpRequestCompleted - Error buffer: %s", response->getErrorBuffer());
+            return;
+        }
         // dump data
         std::vector<char> *buffer = response->getResponseData();
-        std::string data(buffer->begin(), buffer->end());
-        fprintf(stderr, "Http Test, dump data: ");
+        char* file_char = new char[buffer->size()];
+        for (size_t i = 0; i < buffer->size(); i++) {
+            file_char[i] = buffer->at(i);
+        }
         pugi::xml_document doc;
 
-        pugi::xml_parse_result result = doc.load(data.c_str());
+        pugi::xml_parse_result result = doc.load(file_char);
         if (result.status == pugi::status_ok) {
             pugi::xml_node response = doc.child("response");
 
@@ -137,54 +172,101 @@ NS_CC_BEGIN
                 pugi::xml_node ad = *it;
                 const char* link = ad.child_value("link");
                 fprintf(stderr, "\nlink: %s", ad.child_value("link"));
-                dowloadImage(link);
                 pugi::xml_node action = ad.child("action");
-                fprintf(stderr, "\ntarget: %s", action.attribute("target").value());
+                const char* target = action.attribute("target").value();
+                fprintf(stderr, "\ntarget: %s", target);
+                char* t = new char[strlen(target) + 1];
+                strcpy(t, target);
                 pugi::xml_node beacons = ad.child("beacons");
                 pugi::xml_object_range<pugi::xml_named_node_iterator> beaconRange =
                         beacons.children("beacon");
+                std::vector<char*> *beaconsVector = new std::vector<char*>();
                 for (pugi::xml_named_node_iterator it2 = beaconRange.begin();
                         it2 != beaconRange.end(); ++it2) {
-                    fprintf(stderr, "\nbeacon: %s", it2->child_value());
+                    const char * beacon = it2->child_value();
+                    fprintf(stderr, "\nbeacon: %s", beacon);
+                    char* b = new char[strlen(beacon) + 1];
+                    strcpy(b, beacon);
+                    beaconsVector->push_back(b);
                 }
+                dowloadImage(link, t, beaconsVector);
             }
+            CC_SAFE_DELETE_ARRAY(file_char);
+        } else {
+            adsStatus = ADS_Ready;
+            CC_SAFE_DELETE_ARRAY(file_char);
         }
-        fprintf(stderr, "%s", data.c_str());
-        fprintf(stderr, "\n");
     }
-    void Smaato::dowloadImage(const char* url)
+    void Smaato::dowloadImage(const char* url, char* target, std::vector<char*>* beacons)
     {
         cocos2d::network::HttpRequest* request = new cocos2d::network::HttpRequest();
         request->setUrl(url);
         request->setRequestType(HttpRequest_GET);
-        SmaatoDownloadImage* callback = new SmaatoDownloadImage(this);
+        SmaatoDownloadImage* callback = new SmaatoDownloadImage(this, target, beacons);
         request->setResponseCallback(
                 HttpRequest_ResponseCallbackSelector(SmaatoDownloadImage::downloadImage, callback));
         request->setTag("Download Image");
         cocos2d::network::HttpClient::getInstance()->send(request);
         request->release();
     }
-    void Smaato::finishDownloadImage(CCSprite* sprite)
+    void Smaato::downloadBeacon(char* beacon)
     {
-
+        cocos2d::network::HttpRequest* request = new cocos2d::network::HttpRequest();
+        request->setUrl(beacon);
+        request->setRequestType(HttpRequest_GET);
+        SmaatoDownloadBeancon* callback = new SmaatoDownloadBeancon();
+        request->setResponseCallback(
+                HttpRequest_ResponseCallbackSelector(SmaatoDownloadBeancon::downloadBeacon,
+                        callback));
+        request->setTag("Download Beacon");
+        cocos2d::network::HttpClient::getInstance()->send(request);
+        request->release();
+        CC_SAFE_DELETE_ARRAY(beacon);
+    }
+    bool Smaato::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
+    {
+        if (sprite != NULL) {
+            CCPoint location = convertTouchToNodeSpace(pTouch);
+            if (CCRect::CCRectContainsPoint(sprite->boundingBox(), location)) {
+                //TODO excecute link target
+                return true;
+            }
+        }
+        return false;
+    }
+    void Smaato::downloadBeacons(std::vector<char*>* beacons)
+    {
+        while (beacons->size() > 0) {
+            char* beacon = beacons->at(0);
+            downloadBeacon(beacon);
+            beacons->erase(beacons->begin());
+        }
+        CC_SAFE_DELETE(beacons);
+    }
+    void Smaato::finishDownloadImage(CCSprite* sprite, char* target, std::vector<char*>* beancons)
+    {
+        setTarget(target);
         adsStatus = ADS_Ready;
-
         setIsVisible(true);
         setIsTouchEnabled(true);
-        sprite->setAnchorPoint(ccp(0.5, 1));
+        //sprite->setAnchorPoint(ccp(0.5, 1));
+        //sprite->setAnchorPoint(ccp(0,0));
+
+        this->removeAllChildrenWithCleanup(true);
+        CCSize size = CCDirector::sharedDirector()->getWinSize();
+        sprite->setPosition(
+                ccp(size.width / 2, size.height - (sprite->getContentSize().height / 2)));
         this->addChild(sprite);
+        this->sprite = sprite;
+        downloadBeacons(beancons);
+
     }
-    Smaato::~Smaato()
-    {
-    }
-    SmaatoDownloadImage::SmaatoDownloadImage(Smaato* smaato)
-    {
-        _smaato = smaato;
-    }
-    void SmaatoDownloadImage::downloadImage(HttpClient* client, HttpResponse* response)
+    void Smaato::downloadImage(HttpClient* client, HttpResponse* response, char* target,
+            vector<char*>* beacons)
     {
         CCLOG("AppDelegate::onHttpRequestCompleted - onHttpRequestCompleted BEGIN");
         if (!response) {
+            adsStatus = ADS_Ready;
             CCLOG("onHttpRequestCompleted - No Response");
             return;
         }
@@ -192,6 +274,7 @@ NS_CC_BEGIN
         CCLOG("onHttpRequestCompleted - Response code: %lu", response->getResponseCode());
 
         if (!response->isSucceed()) {
+            adsStatus = ADS_Ready;
             CCLOG("onHttpRequestCompleted - Error buffer: %s", response->getErrorBuffer());
             return;
         }
@@ -215,16 +298,18 @@ NS_CC_BEGIN
             fwrite(file_char, 1, buffer->size(), fp);
 
             fclose(fp);
+            CC_SAFE_DELETE_ARRAY(file_char);
             GifBase *gif = InstantGif::create(fullFilename); //InstantGif ：While playing, while parsing
-            _smaato->finishDownloadImage(gif);
+            finishDownloadImage(gif, target, beacons);
         } else if (file_char[1] == 'P' && file_char[2] == 'N' && file_char[3] == 'G') {
             CCImage *image = new CCImage();
             if (image->initWithImageData((void*) file_char, buffer->size(), CCImage::kFmtPng)) {
                 CCTexture2D* texture = new CCTexture2D();
                 texture->initWithImage(image);
                 CCSprite * sprite = CCSprite::spriteWithTexture(texture);
-                _smaato->finishDownloadImage(sprite);
+                finishDownloadImage(sprite, target, beacons);
             }
+            CC_SAFE_DELETE_ARRAY(file_char);
             CC_SAFE_DELETE(image);
         } else {
             CCImage *image = new CCImage();
@@ -232,10 +317,38 @@ NS_CC_BEGIN
                 CCTexture2D* texture = new CCTexture2D();
                 texture->initWithImage(image);
                 CCSprite * sprite = CCSprite::spriteWithTexture(texture);
-                _smaato->finishDownloadImage(sprite);
+                finishDownloadImage(sprite, target, beacons);
             }
+            CC_SAFE_DELETE_ARRAY(file_char);
             CC_SAFE_DELETE(image);
         }
+    }
+    Smaato::~Smaato()
+    {
+        CC_SAFE_DELETE_ARRAY(this->target);
+    }
+    void SmaatoDownloadBeancon::downloadBeacon(HttpClient* client, HttpResponse* response)
+    {
+
+    }
+    SmaatoDownloadBeancon::SmaatoDownloadBeancon()
+    {
+
+    }
+    SmaatoDownloadBeancon::~SmaatoDownloadBeancon()
+    {
+
+    }
+    SmaatoDownloadImage::SmaatoDownloadImage(Smaato* smaato, char* target,
+            std::vector<char*>* beacons)
+    {
+        _smaato = smaato;
+        this->target = target;
+        this->beacons = beacons;
+    }
+    void SmaatoDownloadImage::downloadImage(HttpClient* client, HttpResponse* response)
+    {
+        _smaato->downloadImage(client, response, target, beacons);
     }
     SmaatoDownloadImage::~SmaatoDownloadImage()
     {

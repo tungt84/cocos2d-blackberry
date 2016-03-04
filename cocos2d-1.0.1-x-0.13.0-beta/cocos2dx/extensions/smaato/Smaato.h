@@ -33,10 +33,9 @@ NS_CC_BEGIN
     {
         SF_all, SF_img, SF_txt, SF_richmedia, SF_vast, SF_native
     };
-    enum AdsStatus{
-        ADS_init,
-        ADS_Requesting,
-        ADS_Ready
+    enum AdsStatus
+    {
+        ADS_init, ADS_Requesting, ADS_Ready
     };
     /**
      *
@@ -45,7 +44,7 @@ NS_CC_BEGIN
      * scene->addChild(layer,1);//add other layer under smaato layer
      * smaato->requestAds();
      */
-    class Smaato :public CCLayer
+    class Smaato: public CCLayer
     {
 
     public:
@@ -54,19 +53,32 @@ NS_CC_BEGIN
         void requestAds();
         void stopAds();
         void getAdsCallback(HttpClient* client, HttpResponse* response);
-        void finishDownloadImage(CCSprite* sprite);
+        void downloadImage(HttpClient* client, HttpResponse* response, char* target,
+                vector<char*>* beacons);
+        void finishDownloadImage(CCSprite* sprite, char* target, std::vector<char*>* beancons);
+        void downloadBeacons(std::vector<char*>* beacons);
+        void downloadBeacon(char* beacon);
         void update(float dt);
 
         virtual bool init();
-        LAYER_NODE_FUNC(Smaato);
-        void setAdspace(int adspace){
-            this->adspace =  adspace;
+        virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
+        LAYER_NODE_FUNC(Smaato)
+
+        void setAdspace(int adspace)
+        {
+            this->adspace = adspace;
         }
-        void setPub(int pub){
-            this->pub =  pub;
+        void setPub(int pub)
+        {
+            this->pub = pub;
+        }
+        void setTarget(char* target){
+            CC_SAFE_DELETE_ARRAY(this->target);
+            this->target =  target;
         }
     protected:
-        void dowloadImage(const char* url);
+        void requestAdsInternal();
+        void dowloadImage(const char* url, char* target, std::vector<char*>* beacons);
         int apiver;
         int adspace;
         int pub;
@@ -74,18 +86,30 @@ NS_CC_BEGIN
         SmaatoFormat format;
         bool requestedAds;
         AdsStatus adsStatus;
+        pthread_mutex_t adsStatusMutex;
         float duration;
         bool scheduled;
+        char* target;
+        CCSprite* sprite;
 
+    };
+    class SmaatoDownloadBeancon: public Ref
+    {
+    public:
+        void downloadBeacon(HttpClient* client, HttpResponse* response);
+        SmaatoDownloadBeancon();
+        virtual ~SmaatoDownloadBeancon();
     };
     class SmaatoDownloadImage: public Ref
     {
     public:
         void downloadImage(HttpClient* client, HttpResponse* response);
-        SmaatoDownloadImage(Smaato* smaato);
+        SmaatoDownloadImage(Smaato* smaato, char* target, std::vector<char*>* beacons);
         virtual ~SmaatoDownloadImage();
     private:
-           Smaato* _smaato;
+        Smaato* _smaato;
+        char* target;
+        std::vector<char*>* beacons;
     };
     class SmaatoAdsRequestCallback: public Ref
     {
