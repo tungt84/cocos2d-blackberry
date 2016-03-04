@@ -15,9 +15,10 @@
 #include <platform/CCImage.h>
 #include <CCTexture2D.h>
 #include <CCSprite.h>
-
+#include <pthread.h>
 using namespace cocos2d::network;
 #define SMA_URL "http://soma.smaato.net/oapi/reqAd.jsp"
+#define REFRESH_TIME 60
 NS_CC_BEGIN
 
     enum SmaatoAdspaceSize
@@ -32,16 +33,38 @@ NS_CC_BEGIN
     {
         SF_all, SF_img, SF_txt, SF_richmedia, SF_vast, SF_native
     };
-
-    class Smaato
+    enum AdsStatus{
+        ADS_init,
+        ADS_Requesting,
+        ADS_Ready
+    };
+    /**
+     *
+     * Smaato* smaato = Smaato::node();
+     * scene->addChild(smaato,2);
+     * scene->addChild(layer,1);//add other layer under smaato layer
+     * smaato->requestAds();
+     */
+    class Smaato :public CCLayer
     {
+
     public:
         Smaato();
         virtual ~Smaato();
         void requestAds();
+        void stopAds();
         void getAdsCallback(HttpClient* client, HttpResponse* response);
         void finishDownloadImage(CCSprite* sprite);
-        CCNode* parent;
+        void update(float dt);
+
+        virtual bool init();
+        LAYER_NODE_FUNC(Smaato);
+        void setAdspace(int adspace){
+            this->adspace =  adspace;
+        }
+        void setPub(int pub){
+            this->pub =  pub;
+        }
     protected:
         void dowloadImage(const char* url);
         int apiver;
@@ -49,6 +72,10 @@ NS_CC_BEGIN
         int pub;
         char* device;
         SmaatoFormat format;
+        bool requestedAds;
+        AdsStatus adsStatus;
+        float duration;
+        bool scheduled;
 
     };
     class SmaatoDownloadImage: public Ref

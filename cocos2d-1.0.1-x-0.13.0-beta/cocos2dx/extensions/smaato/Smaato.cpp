@@ -11,8 +11,9 @@
 #include <string>
 #include <string.h>
 #include <extensions/Gif/InstantGif.h>
-NS_CC_BEGIN
+#include <CCScheduler.h>
 
+NS_CC_BEGIN
 
     Smaato::Smaato()
     {
@@ -23,17 +24,55 @@ NS_CC_BEGIN
         strcpy(device,
                 "Mozilla/5.0 (BB10; Kbd) AppleWebKit/537.10+ (KHTML, like Gecko) Version/10.1.0.4633 Mobile Safari/537.10+");
         format = SF_img;
+        requestedAds = false;
+        adsStatus = ADS_init;
+        duration = 0;
+        scheduled = false;
+    }
+    bool Smaato::init()
+    {
+        /////////////////////////////
+        // 1. super init first
+        if (!CCLayer::init()) {
+            return false;
+        }
+        setIsVisible(false);
+        setIsTouchEnabled(false);
+
+        return true;
+    }
+    void Smaato::update(float dt)
+    {
+        duration += dt;
+        if (duration > REFRESH_TIME) {
+            duration = 0;
+            if (requestedAds) {
+                if (adsStatus == ADS_Ready || adsStatus == ADS_init) {
+                    requestAds();
+                }
+            }
+        }
+    }
+    void Smaato::stopAds()
+    {
+        requestedAds = false;
+        this->unscheduleAllSelectors();
+        setIsVisible(false);
+        setIsTouchEnabled(false);
     }
     void Smaato::requestAds()
     {
+        requestedAds = true;
+        adsStatus = ADS_Requesting;
+        if (!scheduled) {
+            this->schedule(schedule_selector(Smaato::update));
+            scheduled = true;
+        }
         cocos2d::network::HttpRequest* request = new cocos2d::network::HttpRequest();
         cocos2d::network::HttpClient::getInstance()->enableCookies(NULL);
         //build request
         char buffer[33];
         std::string url(SMA_URL);
-
-        //sprintf(buffer, "%d", apiver);
-        //url.append("?apiver=").append(buffer);
 
         sprintf(buffer, "%d", adspace);
         url.append("?adspace=").append(buffer);
@@ -127,7 +166,13 @@ NS_CC_BEGIN
     }
     void Smaato::finishDownloadImage(CCSprite* sprite)
     {
-        parent->addChild(sprite);
+
+        adsStatus = ADS_Ready;
+
+        setIsVisible(true);
+        setIsTouchEnabled(true);
+        sprite->setAnchorPoint(ccp(0.5, 1));
+        this->addChild(sprite);
     }
     Smaato::~Smaato()
     {
@@ -154,14 +199,43 @@ NS_CC_BEGIN
         CCLOG("onHttpRequestCompleted - Response code: %s", response->getResponseDataString());
 
         std::vector<char> *buffer = response->getResponseData();
-        const char* file_char = std::string(buffer->begin(), buffer->end()).c_str();
-        //TODO save gif to file
-        std::string name = "g2.gif";
-        name = CCFileUtils::fullPathFromRelativePath(name.c_str());
-        GifBase *gif = InstantGif::create(name.c_str());//InstantGif ：While playing, while parsing
-        gif->setAnchorPoint(ccp(0,0));
-        gif->setPosition(ccp(0,0));
-        _smaato->finishDownloadImage(gif);
+        char* file_char = new char[buffer->size()];
+        for (size_t i = 0; i < buffer->size(); i++) {
+            file_char[i] = buffer->at(i);
+        }
+        if (file_char[0] == 'G' && file_char[1] == 'I' && file_char[2] == 'F') { //gif file
+            const char* fullFilename = CCFileUtils::getWriteablePath().append("banner.gif").c_str();
+            FILE *fp = fopen(fullFilename, "wb");
+
+            if (!fp) {
+                CCLOG("can not create file %s", fullFilename);
+                return;
+            }
+
+            fwrite(file_char, 1, buffer->size(), fp);
+
+            fclose(fp);
+            GifBase *gif = InstantGif::create(fullFilename); //InstantGif ：While playing, while parsing
+            _smaato->finishDownloadImage(gif);
+        } else if (file_char[1] == 'P' && file_char[2] == 'N' && file_char[3] == 'G') {
+            CCImage *image = new CCImage();
+            if (image->initWithImageData((void*) file_char, buffer->size(), CCImage::kFmtPng)) {
+                CCTexture2D* texture = new CCTexture2D();
+                texture->initWithImage(image);
+                CCSprite * sprite = CCSprite::spriteWithTexture(texture);
+                _smaato->finishDownloadImage(sprite);
+            }
+            CC_SAFE_DELETE(image);
+        } else {
+            CCImage *image = new CCImage();
+            if (image->initWithImageData((void*) file_char, buffer->size(), CCImage::kFmtJpg)) {
+                CCTexture2D* texture = new CCTexture2D();
+                texture->initWithImage(image);
+                CCSprite * sprite = CCSprite::spriteWithTexture(texture);
+                _smaato->finishDownloadImage(sprite);
+            }
+            CC_SAFE_DELETE(image);
+        }
     }
     SmaatoDownloadImage::~SmaatoDownloadImage()
     {

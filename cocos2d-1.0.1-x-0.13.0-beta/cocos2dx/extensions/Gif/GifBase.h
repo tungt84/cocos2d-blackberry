@@ -1,6 +1,6 @@
 #ifndef GIFBASE_H
 #define GIFBASE_H
-#include "cocos2d.h"
+#include <cocos2d.h>
 #include "Bitmap.h"
 
 class GifBase : public cocos2d::CCSprite
@@ -19,7 +19,7 @@ public:
 		uint32_t ldelta = (uint32_t)(delta * 1000);
 		updateGif(ldelta);
 	};
-    
+
 	virtual std::string getGifFrameName(int index)
 	{
 		return m_gif_fullpath;

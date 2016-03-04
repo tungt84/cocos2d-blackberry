@@ -20,7 +20,7 @@ CCTexture2D* GifBase::createTexture(Bitmap* bm, int index, bool getCache)
 	}
 
 	CCImage* img = new CCImage();
-	do 
+	do
 	{
 		bool res = true;
 		const uint32_t* RgbaData = bm->getRGBA();
@@ -28,12 +28,12 @@ CCTexture2D* GifBase::createTexture(Bitmap* bm, int index, bool getCache)
 		if(!res) break;
 
 		CCTextureCache::sharedTextureCache()->removeTextureForKey(textureName.c_str());
-        
+
         //Adding texture to CCTextureCache  to ensure that on the Android platform, when cut into the foreground from the background, the VolatileTexture can reload our texture
 		texture = CCTextureCache::sharedTextureCache()->addUIImage(img, textureName.c_str());
 	} while (0);
 
-	CC_SAFE_RELEASE(img);
-
+	//CC_SAFE_RELEASE(img);
+	CC_SAFE_DELETE(img);
 	return texture;
 }
