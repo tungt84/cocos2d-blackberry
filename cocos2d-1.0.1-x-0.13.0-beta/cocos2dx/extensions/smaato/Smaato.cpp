@@ -87,6 +87,7 @@ NS_CC_BEGIN
     {
         //this->unscheduleAllSelectors();
         requestedAds = false;
+        show =  false;
         adsStatus = ADS_Ready;
         hideAds();
     }
@@ -152,6 +153,7 @@ NS_CC_BEGIN
     void Smaato::requestAds()
     {
         requestedAds = true;
+        show =  true;
         if(adsStatus == ADS_NaN){
             adsStatus = ADS_init;
         }
