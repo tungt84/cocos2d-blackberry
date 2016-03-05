@@ -46,20 +46,9 @@ NS_CC_BEGIN
         dimension = D_medrect;
         target = NULL;
         sprite = NULL;
-        _pTarget = NULL;
-        _pSelector = NULL;
         show = false;
     }
-    void Smaato::setTargetLinkCallback(Ref* pTarget, SEL_TargetLink pSelector)
-    {
-        _pTarget = pTarget;
-        _pSelector = pSelector;
 
-        if (_pTarget) {
-            _pTarget->retain();
-        }
-
-    }
     bool Smaato::init()
     {
         /////////////////////////////
@@ -299,12 +288,11 @@ NS_CC_BEGIN
                         && CCRect::CCRectContainsPoint(closeSprite->boundingBox(), location)) {
                     hideAds();
                 } else if (CCRect::CCRectContainsPoint(sprite->boundingBox(), location)) {
-                    if (_pSelector && _pTarget) {
-                        if (target) {
-                            (_pTarget->*_pSelector)(target);
-                            CC_SAFE_DELETE_ARRAY(target);
-                            setIsVisible(false);
-                        }
+
+                    if (target) {
+                        openUrl(target);
+                        CC_SAFE_DELETE_ARRAY(target);
+                        setIsVisible(false);
                     }
                 }
             }
@@ -330,13 +318,15 @@ NS_CC_BEGIN
             this->removeChild(sprite, true);
         }
         CCSize size = CCDirector::sharedDirector()->getWinSize();
-        sprite->setPosition(
-                ccp(size.width / 2, size.height - (sprite->getContentSize().height / 2)));
-        this->addChild(sprite);
+        sprite->setPosition(ccp(size.width / 2, size.height / 2));
+        this->addChild(sprite,1);
         if (closeSprite) {
             closeSprite->setPosition(
-                    ccp(size.width / 2 + sprite->getContentSize().width / 2,
-                            size.height - (closeSprite->getContentSize().height / 2)));
+                    ccp(
+                            size.width / 2 + sprite->getContentSize().width / 2
+                                    ,
+                            size.height / 2 + sprite->getContentSize().height / 2
+                                    ));
         }
         if (show) {
             setIsVisible(true);
@@ -410,9 +400,6 @@ NS_CC_BEGIN
     Smaato::~Smaato()
     {
         CC_SAFE_DELETE_ARRAY(this->target);
-        if (_pTarget) {
-            _pTarget->release();
-        }
     }
     void SmaatoDownloadBeancon::downloadBeacon(HttpClient* client, HttpResponse* response)
     {

@@ -69,7 +69,7 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         void downloadBeacons(std::vector<char*>* beacons);
         void downloadBeacon(char* beacon);
         void update(float dt);
-        void setTargetLinkCallback(Ref* pTarget, SEL_TargetLink pSelector);
+        void openUrl(const char* target);
 
         virtual bool init();
         virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
@@ -89,7 +89,7 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
             }
             this->closeSprite =  closeSprite;
             if(closeSprite){
-                this->addChild(closeSprite);
+                this->addChild(closeSprite,2);
             }
         }
         void setTarget(char* target){
@@ -114,8 +114,8 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         CCSprite* sprite;
         CCSprite* closeSprite;
         bool show;
-        Ref*                        _pTarget;        /// callback target of pSelector function
-        SEL_TargetLink            _pSelector;      /// callback function, e.g. MyLayer::onTargetLink(const char* target){navigator_invoke(target, 0);}
+         //_pSelector;      /// callback function, e.g. MyLaRef*                        _pTarget;        /// callback target of pSelector function
+        //SEL_TargetLink           yer::onTargetLink(const char* target){navigator_invoke(target, 0);}
 
     };
     class SmaatoDownloadBeancon: public Ref
