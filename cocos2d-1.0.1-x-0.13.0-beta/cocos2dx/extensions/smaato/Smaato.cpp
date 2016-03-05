@@ -25,9 +25,8 @@ NS_CC_BEGIN
                 "Mozilla/5.0 (BB10; Kbd) AppleWebKit/537.10+ (KHTML, like Gecko) Version/10.1.0.4633 Mobile Safari/537.10+");
         format = SF_img;
         requestedAds = false;
-        adsStatus = ADS_init;
+        adsStatus = ADS_NaN;
         duration = 0;
-        scheduled = false;
         adsStatusMutex = PTHREAD_MUTEX_INITIALIZER;
         target = NULL;
         sprite = NULL;
@@ -51,9 +50,9 @@ NS_CC_BEGIN
         if (!CCLayer::init()) {
             return false;
         }
-        setIsVisible(false);
-        setIsTouchEnabled(false);
-
+        CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this,0,true);
+        hideAds();
+        this->schedule(schedule_selector(Smaato::update));
         return true;
     }
     void Smaato::update(float dt)
@@ -72,13 +71,20 @@ NS_CC_BEGIN
             }
         }
     }
+    void Smaato::hideAds(){
+        setIsVisible(false);
+        setIsTouchEnabled(false);
+    }
+    void Smaato::showAds(){
+        setIsVisible(true);
+        setIsTouchEnabled(true);
+    }
     void Smaato::stopAds()
     {
         //this->unscheduleAllSelectors();
         requestedAds = false;
         adsStatus = ADS_Ready;
-        setIsVisible(false);
-        setIsTouchEnabled(false);
+        hideAds();
     }
     void Smaato::requestAdsInternal()
     {
@@ -142,11 +148,9 @@ NS_CC_BEGIN
     void Smaato::requestAds()
     {
         requestedAds = true;
-        if (!scheduled) {
-            scheduled = true;
-            this->schedule(schedule_selector(Smaato::update));
+        if(adsStatus == ADS_NaN){
+            adsStatus == ADS_init;
         }
-
     }
     void Smaato::getAdsCallback(HttpClient* client, HttpResponse* response)
     {
@@ -242,7 +246,11 @@ NS_CC_BEGIN
                 CCPoint location = convertTouchToNodeSpace(pTouch);
                 if (CCRect::CCRectContainsPoint(sprite->boundingBox(), location)) {
                     if(_pSelector&&_pTarget){
-                        (_pTarget->*_pSelector)(target);
+                        if(target){
+                            (_pTarget->*_pSelector)(target);
+                            CC_SAFE_DELETE_ARRAY(target);
+                            hideAds();
+                        }
                     }
 
                     return true;
@@ -265,8 +273,7 @@ NS_CC_BEGIN
         setTarget(target);
         adsStatus = ADS_Ready;
         if (requestedAds) {
-            setIsVisible(true);
-            setIsTouchEnabled(true);
+            showAds();
         }
         //sprite->setAnchorPoint(ccp(0.5, 1));
         //sprite->setAnchorPoint(ccp(0,0));

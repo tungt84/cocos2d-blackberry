@@ -35,7 +35,7 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
     };
     enum AdsStatus
     {
-        ADS_init, ADS_Requesting, ADS_Ready
+        ADS_NaN,ADS_init, ADS_Requesting, ADS_Ready
     };
     /**
      *
@@ -51,6 +51,8 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         Smaato();
         virtual ~Smaato();
         void requestAds();
+        void hideAds();
+        void showAds();
         void stopAds();
         void getAdsCallback(HttpClient* client, HttpResponse* response);
         void downloadImage(HttpClient* client, HttpResponse* response, char* target,
@@ -89,11 +91,10 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         AdsStatus adsStatus;
         pthread_mutex_t adsStatusMutex;
         float duration;
-        bool scheduled;
         char* target;
         CCSprite* sprite;
         Ref*                        _pTarget;        /// callback target of pSelector function
-        SEL_TargetLink            _pSelector;      /// callback function, e.g. MyLayer::onTargetLink(const char* target)
+        SEL_TargetLink            _pSelector;      /// callback function, e.g. MyLayer::onTargetLink(const char* target){navigator_invoke(target, 0);}
 
     };
     class SmaatoDownloadBeancon: public Ref
