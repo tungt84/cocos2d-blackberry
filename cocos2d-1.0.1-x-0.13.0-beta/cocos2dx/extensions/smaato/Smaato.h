@@ -93,6 +93,7 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         float duration;
         char* target;
         CCSprite* sprite;
+        bool show;
         Ref*                        _pTarget;        /// callback target of pSelector function
         SEL_TargetLink            _pSelector;      /// callback function, e.g. MyLayer::onTargetLink(const char* target){navigator_invoke(target, 0);}
 

@@ -32,6 +32,7 @@ NS_CC_BEGIN
         sprite = NULL;
         _pTarget = NULL;
         _pSelector = NULL;
+        show =  false;
     }
     void Smaato::setTargetLinkCallback(Ref* pTarget, SEL_TargetLink pSelector)
     {
@@ -50,6 +51,7 @@ NS_CC_BEGIN
         if (!CCLayer::init()) {
             return false;
         }
+        setIsTouchEnabled(true);
         CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this,0,true);
         hideAds();
         this->schedule(schedule_selector(Smaato::update));
@@ -73,11 +75,13 @@ NS_CC_BEGIN
     }
     void Smaato::hideAds(){
         setIsVisible(false);
-        setIsTouchEnabled(false);
+        show = false;
+        //setIsTouchEnabled(false);
     }
     void Smaato::showAds(){
         setIsVisible(true);
-        setIsTouchEnabled(true);
+        show =  true;
+        //setIsTouchEnabled(true);
     }
     void Smaato::stopAds()
     {
@@ -252,8 +256,6 @@ NS_CC_BEGIN
                             hideAds();
                         }
                     }
-
-                    return true;
                 }
             }
         }
@@ -272,7 +274,7 @@ NS_CC_BEGIN
     {
         setTarget(target);
         adsStatus = ADS_Ready;
-        if (requestedAds) {
+        if (show) {
             showAds();
         }
         //sprite->setAnchorPoint(ccp(0.5, 1));
