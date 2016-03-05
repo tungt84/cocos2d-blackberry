@@ -29,6 +29,14 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         MMA_XLarge, //300x50
         MMA_XXLarge //320x50
     };
+    enum SmaatoDimension{
+        D_mma,// Any MMA size
+        D_medrect,//(300 x 250)
+        D_sky,//(120 x 600)
+        D_leader,//(728 x 90)
+        D_full_320x480,
+        D_full_768x1024
+    };
     enum SmaatoFormat
     {
         SF_all, SF_img, SF_txt, SF_richmedia, SF_vast, SF_native
@@ -65,7 +73,7 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
 
         virtual bool init();
         virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
-        LAYER_NODE_FUNC(Smaato)
+        static Smaato* getInstance();
 
         void setAdspace(int adspace)
         {
@@ -75,11 +83,21 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         {
             this->pub = pub;
         }
+        void setCloseSprite(CCSprite* closeSprite){
+            if(this->closeSprite){
+                this->removeChild(this->closeSprite,true);
+            }
+            this->closeSprite =  closeSprite;
+            if(closeSprite){
+                this->addChild(closeSprite);
+            }
+        }
         void setTarget(char* target){
             CC_SAFE_DELETE_ARRAY(this->target);
             this->target =  target;
         }
     protected:
+        static Smaato* pInstance;
         void requestAdsInternal();
         void dowloadImage(const char* url, char* target, std::vector<char*>* beacons);
         int apiver;
@@ -87,12 +105,14 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         int pub;
         char* device;
         SmaatoFormat format;
+        SmaatoDimension dimension;
         bool requestedAds;
         AdsStatus adsStatus;
         pthread_mutex_t adsStatusMutex;
         float duration;
         char* target;
         CCSprite* sprite;
+        CCSprite* closeSprite;
         bool show;
         Ref*                        _pTarget;        /// callback target of pSelector function
         SEL_TargetLink            _pSelector;      /// callback function, e.g. MyLayer::onTargetLink(const char* target){navigator_invoke(target, 0);}

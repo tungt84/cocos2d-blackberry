@@ -14,7 +14,21 @@
 #include <CCScheduler.h>
 
 NS_CC_BEGIN
+    Smaato* Smaato::pInstance = NULL;
+    Smaato* Smaato::getInstance()
+    {
+        if (pInstance == NULL) {
+            pInstance = new Smaato();
+            if (pInstance && pInstance->init()) {
+                pInstance->autorelease();
+            } else {
+                delete pInstance;
+                pInstance = NULL;
+            }
 
+        }
+        return pInstance;
+    }
     Smaato::Smaato()
     {
         apiver = 501;
@@ -28,11 +42,13 @@ NS_CC_BEGIN
         adsStatus = ADS_NaN;
         duration = 0;
         adsStatusMutex = PTHREAD_MUTEX_INITIALIZER;
+        this->closeSprite = NULL;
+        dimension = D_medrect;
         target = NULL;
         sprite = NULL;
         _pTarget = NULL;
         _pSelector = NULL;
-        show =  false;
+        show = false;
     }
     void Smaato::setTargetLinkCallback(Ref* pTarget, SEL_TargetLink pSelector)
     {
@@ -52,8 +68,8 @@ NS_CC_BEGIN
             return false;
         }
         setIsTouchEnabled(true);
-        CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this,0,true);
-        hideAds();
+        CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this, 0, true);
+        setIsVisible(false);
         this->schedule(schedule_selector(Smaato::update));
         return true;
     }
@@ -73,21 +89,23 @@ NS_CC_BEGIN
             }
         }
     }
-    void Smaato::hideAds(){
+    void Smaato::hideAds()
+    {
         setIsVisible(false);
         show = false;
         //setIsTouchEnabled(false);
     }
-    void Smaato::showAds(){
+    void Smaato::showAds()
+    {
         setIsVisible(true);
-        show =  true;
+        show = true;
         //setIsTouchEnabled(true);
     }
     void Smaato::stopAds()
     {
         //this->unscheduleAllSelectors();
         requestedAds = false;
-        show =  false;
+        show = false;
         adsStatus = ADS_Ready;
         hideAds();
     }
@@ -135,7 +153,28 @@ NS_CC_BEGIN
                     url.append("&format=").append("vast");
                     break;
             }
-
+            url.append("&formatstrict=true");
+            switch (dimension) {
+                case D_mma:
+                    url.append("&dimension=mma");
+                    break;
+                case D_full_320x480:
+                    url.append("&dimension=full_320x480");
+                    break;
+                case D_full_768x1024:
+                    url.append("&dimension=full_768x1024");
+                    break;
+                case D_leader:
+                    url.append("&dimension=leader");
+                    break;
+                case D_medrect:
+                    url.append("&dimension=medrect");
+                    break;
+                case D_sky:
+                    url.append("&dimension=sky");
+                    break;
+            }
+            url.append("&dimensionstrict=true");
             url.append("&response=XML");
 
             request->setUrl(url.c_str());
@@ -153,8 +192,8 @@ NS_CC_BEGIN
     void Smaato::requestAds()
     {
         requestedAds = true;
-        show =  true;
-        if(adsStatus == ADS_NaN){
+        show = true;
+        if (adsStatus == ADS_NaN) {
             adsStatus = ADS_init;
         }
     }
@@ -186,34 +225,40 @@ NS_CC_BEGIN
             pugi::xml_node response = doc.child("response");
 
             fprintf(stderr, "\nsessionid: %s", response.child_value("sessionid"));
-            fprintf(stderr, "\nstatus: %s", response.child_value("status"));
-
-            pugi::xml_node ads = response.child("ads");
-            pugi::xml_object_range<pugi::xml_named_node_iterator> adRange = ads.children("ad");
-            for (pugi::xml_named_node_iterator it = adRange.begin(); it != adRange.end(); ++it) {
-                pugi::xml_node ad = *it;
-                const char* link = ad.child_value("link");
-                fprintf(stderr, "\nlink: %s", ad.child_value("link"));
-                pugi::xml_node action = ad.child("action");
-                const char* target = action.attribute("target").value();
-                fprintf(stderr, "\ntarget: %s", target);
-                char* t = new char[strlen(target) + 1];
-                strcpy(t, target);
-                pugi::xml_node beacons = ad.child("beacons");
-                pugi::xml_object_range<pugi::xml_named_node_iterator> beaconRange =
-                        beacons.children("beacon");
-                std::vector<char*> *beaconsVector = new std::vector<char*>();
-                for (pugi::xml_named_node_iterator it2 = beaconRange.begin();
-                        it2 != beaconRange.end(); ++it2) {
-                    const char * beacon = it2->child_value();
-                    fprintf(stderr, "\nbeacon: %s", beacon);
-                    char* b = new char[strlen(beacon) + 1];
-                    strcpy(b, beacon);
-                    beaconsVector->push_back(b);
+            const char* status = response.child_value("status");
+            fprintf(stderr, "\nstatus: %s", status);
+            if (strcmp(status, "success") == 0) {
+                pugi::xml_node ads = response.child("ads");
+                pugi::xml_object_range<pugi::xml_named_node_iterator> adRange = ads.children("ad");
+                for (pugi::xml_named_node_iterator it = adRange.begin(); it != adRange.end();
+                        ++it) {
+                    pugi::xml_node ad = *it;
+                    const char* link = ad.child_value("link");
+                    fprintf(stderr, "\nlink: %s", ad.child_value("link"));
+                    pugi::xml_node action = ad.child("action");
+                    const char* target = action.attribute("target").value();
+                    fprintf(stderr, "\ntarget: %s", target);
+                    char* t = new char[strlen(target) + 1];
+                    strcpy(t, target);
+                    pugi::xml_node beacons = ad.child("beacons");
+                    pugi::xml_object_range<pugi::xml_named_node_iterator> beaconRange =
+                            beacons.children("beacon");
+                    std::vector<char*> *beaconsVector = new std::vector<char*>();
+                    for (pugi::xml_named_node_iterator it2 = beaconRange.begin();
+                            it2 != beaconRange.end(); ++it2) {
+                        const char * beacon = it2->child_value();
+                        fprintf(stderr, "\nbeacon: %s", beacon);
+                        char* b = new char[strlen(beacon) + 1];
+                        strcpy(b, beacon);
+                        beaconsVector->push_back(b);
+                    }
+                    dowloadImage(link, t, beaconsVector);
                 }
-                dowloadImage(link, t, beaconsVector);
+                CC_SAFE_DELETE_ARRAY(file_char);
+            } else {
+                adsStatus = ADS_Ready;
+                CC_SAFE_DELETE_ARRAY(file_char);
             }
-            CC_SAFE_DELETE_ARRAY(file_char);
         } else {
             adsStatus = ADS_Ready;
             CC_SAFE_DELETE_ARRAY(file_char);
@@ -250,12 +295,15 @@ NS_CC_BEGIN
         if (requestedAds) {
             if (sprite != NULL && target != NULL) {
                 CCPoint location = convertTouchToNodeSpace(pTouch);
-                if (CCRect::CCRectContainsPoint(sprite->boundingBox(), location)) {
-                    if(_pSelector&&_pTarget){
-                        if(target){
+                if (closeSprite != NULL
+                        && CCRect::CCRectContainsPoint(closeSprite->boundingBox(), location)) {
+                    hideAds();
+                } else if (CCRect::CCRectContainsPoint(sprite->boundingBox(), location)) {
+                    if (_pSelector && _pTarget) {
+                        if (target) {
                             (_pTarget->*_pSelector)(target);
                             CC_SAFE_DELETE_ARRAY(target);
-                            hideAds();
+                            setIsVisible(false);
                         }
                     }
                 }
@@ -276,17 +324,23 @@ NS_CC_BEGIN
     {
         setTarget(target);
         adsStatus = ADS_Ready;
-        if (show) {
-            showAds();
-        }
         //sprite->setAnchorPoint(ccp(0.5, 1));
         //sprite->setAnchorPoint(ccp(0,0));
-
-        this->removeAllChildrenWithCleanup(true);
+        if (sprite) {
+            this->removeChild(sprite, true);
+        }
         CCSize size = CCDirector::sharedDirector()->getWinSize();
         sprite->setPosition(
                 ccp(size.width / 2, size.height - (sprite->getContentSize().height / 2)));
         this->addChild(sprite);
+        if (closeSprite) {
+            closeSprite->setPosition(
+                    ccp(size.width / 2 + sprite->getContentSize().width / 2,
+                            size.height - (closeSprite->getContentSize().height / 2)));
+        }
+        if (show) {
+            setIsVisible(true);
+        }
         this->sprite = sprite;
         downloadBeacons(beancons);
 
