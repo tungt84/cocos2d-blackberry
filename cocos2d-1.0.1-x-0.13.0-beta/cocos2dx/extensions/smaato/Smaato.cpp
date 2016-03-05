@@ -149,7 +149,7 @@ NS_CC_BEGIN
     {
         requestedAds = true;
         if(adsStatus == ADS_NaN){
-            adsStatus == ADS_init;
+            adsStatus = ADS_init;
         }
     }
     void Smaato::getAdsCallback(HttpClient* client, HttpResponse* response)
