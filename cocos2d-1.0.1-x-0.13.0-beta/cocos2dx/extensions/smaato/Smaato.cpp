@@ -49,12 +49,13 @@ NS_CC_BEGIN
         show = true;
 
     }
-    void Smaato::setImageSprite(CCSprite* sprite)
+    void Smaato::updateUI(char* target, CCSprite* imageSprite)
     {
-
+        CC_SAFE_DELETE_ARRAY(this->target);
+        this->target = target;
         if (this->sprite) {
             CCSprite* tmp = this->sprite;
-            this->sprite =NULL;
+            this->sprite = NULL;
             this->removeChild(tmp, true);
 
         }
@@ -71,7 +72,6 @@ NS_CC_BEGIN
         }
         this->sprite = sprite;
     }
-
     bool Smaato::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
     {
         if (sprite != NULL && target != NULL) {

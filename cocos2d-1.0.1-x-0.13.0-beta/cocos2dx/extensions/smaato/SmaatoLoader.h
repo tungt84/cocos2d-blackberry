@@ -30,8 +30,7 @@ NS_CC_BEGIN
     public:
         SmaatoLoader();
         virtual ~SmaatoLoader();
-        SmaatoLoader* sharedSmaatoLoader();
-        Smaato* createAdsView();
+        static SmaatoLoader* sharedSmaatoLoader();
         void update(float dt);
 
         bool init();
@@ -42,7 +41,8 @@ NS_CC_BEGIN
                 vector<char*>* beacons);
 
         void stopAds();
-        void requestAds();
+        void requestAdsView(Smaato* smaato);
+        void removeAdsView();
 
     protected:
         void requestAdsInternal();

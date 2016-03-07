@@ -76,12 +76,8 @@ NS_CC_BEGIN
                 this->addChild(closeSprite, 2);
             }
         }
-        void setTarget(char* target)
-        {
-            CC_SAFE_DELETE_ARRAY(this->target);
-            this->target = target;
-        }
-        void setImageSprite(CCSprite* sprite);
+        void updateUI(char* target,CCSprite* imageSprite);
+
     protected:
 
         char* target;

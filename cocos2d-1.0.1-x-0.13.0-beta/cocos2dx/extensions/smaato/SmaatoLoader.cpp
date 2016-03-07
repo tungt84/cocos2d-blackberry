@@ -55,12 +55,16 @@ NS_CC_BEGIN
         }
     }
 
-    void SmaatoLoader::requestAds()
+    void SmaatoLoader::removeAdsView(){
+        _smaatoInstace = NULL;
+    }
+    void SmaatoLoader::requestAdsView(Smaato* smaato)
     {
         requestedAds = true;
         if (adsStatus == ADS_NaN) {
             adsStatus = ADS_init;
         }
+        _smaatoInstace =  smaato;
         if (_smaatoInstace) {
             _smaatoInstace->showAds();
         }
@@ -153,12 +157,7 @@ NS_CC_BEGIN
             request->release();
         }
     }
-    Smaato* SmaatoLoader::createAdsView()
-    {
-        Smaato* smaato = Smaato::node();
-        _smaatoInstace = smaato;
-        return smaato;
-    }
+
     SmaatoLoader::SmaatoLoader()
     {
         apiver = 501;
@@ -332,10 +331,8 @@ NS_CC_BEGIN
             std::vector<char*>* beancons)
     {
         if (_smaatoInstace != NULL) {
-            _smaatoInstace->setTarget(NULL);
             adsStatus = ADS_Ready;
-            _smaatoInstace->setImageSprite(sprite);
-            _smaatoInstace->setTarget(target);
+            _smaatoInstace->updateUI(target,sprite);
             downloadBeacons(beancons);
         }
 
