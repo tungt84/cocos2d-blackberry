@@ -60,8 +60,8 @@ NS_CC_BEGIN
 
         }
         CCSize size = CCDirector::sharedDirector()->getWinSize();
-        sprite->setPosition(ccp(size.width / 2, size.height / 2));
-        this->addChild(sprite, 1);
+        imageSprite->setPosition(ccp(size.width / 2, size.height / 2));
+        this->addChild(imageSprite, 1);
         if (closeSprite) {
             closeSprite->setPosition(
                     ccp(size.width / 2 + sprite->getContentSize().width / 2,
@@ -70,7 +70,7 @@ NS_CC_BEGIN
         if (show) {
             setIsVisible(true);
         }
-        this->sprite = sprite;
+        this->sprite = imageSprite;
     }
     bool Smaato::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
     {
