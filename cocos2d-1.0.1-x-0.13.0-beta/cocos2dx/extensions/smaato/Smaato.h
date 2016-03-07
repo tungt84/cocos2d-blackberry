@@ -20,7 +20,7 @@ using namespace cocos2d::network;
 #define SMA_URL "http://soma.smaato.net/oapi/reqAd.jsp"
 #define REFRESH_TIME 60
 NS_CC_BEGIN
-typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
+    typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
     enum SmaatoAdspaceSize
     {
         MMA_Small, //120x20
@@ -29,21 +29,18 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         MMA_XLarge, //300x50
         MMA_XXLarge //320x50
     };
-    enum SmaatoDimension{
-        D_mma,// Any MMA size
-        D_medrect,//(300 x 250)
-        D_sky,//(120 x 600)
-        D_leader,//(728 x 90)
+    enum SmaatoDimension
+    {
+        D_mma, // Any MMA size
+        D_medrect, //(300 x 250)
+        D_sky, //(120 x 600)
+        D_leader, //(728 x 90)
         D_full_320x480,
         D_full_768x1024
     };
     enum SmaatoFormat
     {
         SF_all, SF_img, SF_txt, SF_richmedia, SF_vast, SF_native
-    };
-    enum AdsStatus
-    {
-        ADS_NaN,ADS_init, ADS_Requesting, ADS_Ready
     };
     /**
      *
@@ -62,90 +59,41 @@ typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
         void hideAds();
         void showAds();
         void stopAds();
-        void getAdsCallback(HttpClient* client, HttpResponse* response);
-        void downloadImage(HttpClient* client, HttpResponse* response, char* target,
-                vector<char*>* beacons);
-        void finishDownloadImage(CCSprite* sprite, char* target, std::vector<char*>* beancons);
-        void downloadBeacons(std::vector<char*>* beacons);
-        void downloadBeacon(char* beacon);
-        void update(float dt);
         void openUrl(const char* target);
 
         virtual bool init();
         virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
-        static Smaato* getInstance();
 
-        void setAdspace(int adspace)
+        LAYER_NODE_FUNC(Smaato)
+
+        void setCloseSprite(CCSprite* closeSprite)
         {
-            this->adspace = adspace;
-        }
-        void setPub(int pub)
-        {
-            this->pub = pub;
-        }
-        void setCloseSprite(CCSprite* closeSprite){
-            if(this->closeSprite){
-                this->removeChild(this->closeSprite,true);
+            if (this->closeSprite) {
+                this->removeChild(this->closeSprite, true);
             }
-            this->closeSprite =  closeSprite;
-            if(closeSprite){
-                this->addChild(closeSprite,2);
+            this->closeSprite = closeSprite;
+            if (closeSprite) {
+                this->addChild(closeSprite, 2);
             }
         }
-        void setTarget(char* target){
+        void setTarget(char* target)
+        {
             CC_SAFE_DELETE_ARRAY(this->target);
-            this->target =  target;
+            this->target = target;
         }
+        void setImageSprite(CCSprite* sprite);
     protected:
-        static Smaato* pInstance;
-        void requestAdsInternal();
-        void dowloadImage(const char* url, char* target, std::vector<char*>* beacons);
-        int apiver;
-        int adspace;
-        int pub;
-        char* device;
-        SmaatoFormat format;
-        SmaatoDimension dimension;
-        bool requestedAds;
-        AdsStatus adsStatus;
-        pthread_mutex_t adsStatusMutex;
-        float duration;
+
         char* target;
         CCSprite* sprite;
         CCSprite* closeSprite;
         bool show;
-         //_pSelector;      /// callback function, e.g. MyLaRef*                        _pTarget;        /// callback target of pSelector function
+        //_pSelector;      /// callback function, e.g. MyLaRef*                        _pTarget;        /// callback target of pSelector function
         //SEL_TargetLink           yer::onTargetLink(const char* target){navigator_invoke(target, 0);}
 
     };
-    class SmaatoDownloadBeancon: public Ref
-    {
-    public:
-        void downloadBeacon(HttpClient* client, HttpResponse* response);
-        SmaatoDownloadBeancon();
-        virtual ~SmaatoDownloadBeancon();
-    };
-    class SmaatoDownloadImage: public Ref
-    {
-    public:
-        void downloadImage(HttpClient* client, HttpResponse* response);
-        SmaatoDownloadImage(Smaato* smaato, char* target, std::vector<char*>* beacons);
-        virtual ~SmaatoDownloadImage();
-    private:
-        Smaato* _smaato;
-        char* target;
-        std::vector<char*>* beacons;
-    };
-    class SmaatoAdsRequestCallback: public Ref
-    {
-    public:
-        void getAdsCallback(HttpClient* client, HttpResponse* response);
-        SmaatoAdsRequestCallback(Smaato* smaato);
-        virtual ~SmaatoAdsRequestCallback();
-    private:
-        Smaato* _smaato;
 
-    };
+
 NS_CC_END
 ;
 #endif /* SMAATO_H_ */
