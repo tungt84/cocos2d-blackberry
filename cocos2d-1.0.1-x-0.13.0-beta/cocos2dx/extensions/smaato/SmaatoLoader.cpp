@@ -13,6 +13,7 @@
 #include <string.h>
 #include <extensions/Gif/InstantGif.h>
 #include <CCScheduler.h>
+
 NS_CC_BEGIN
     SmaatoLoader* SmaatoLoader::pInstance = NULL;
 
@@ -30,8 +31,28 @@ NS_CC_BEGIN
         scheduler->scheduleSelector(schedule_selector(SmaatoLoader::update), this, 0, false);
         return true;
     }
+    void SmaatoLoader::setAdsAttachedStatus(bool adsAttachedStatus){
+        this->adsAttachedStatus = adsAttachedStatus;
+    }
+    void SmaatoLoader::setAdsZoder(int adsZoder){
+        this->adsZoder =  adsZoder;
+    }
+    void SmaatoLoader::setAdsTag(int adsTag){
+        this->adsTag =  adsTag;
+    }
     void SmaatoLoader::update(float dt)
     {
+        if (adsAttachedStatus) {
+            CCScene *scene = CCDirector::sharedDirector()->getRunningScene();
+            if (scene) {
+                int tag = scene->getTag();
+                if (tag == adsTag && _smaatoInstace !=NULL) {
+                    adsAttachedStatus = false;
+                    scene->addChild(_smaatoInstace, adsZoder);
+                }
+            }
+
+        }
         if (requestedAds && adsStatus == ADS_init) { //first time
             requestAdsInternal();
         } else {
@@ -55,8 +76,11 @@ NS_CC_BEGIN
         }
     }
 
-    void SmaatoLoader::removeAdsView(){
+    Smaato* SmaatoLoader::removeAdsView()
+    {
+        Smaato* tmp = _smaatoInstace;
         _smaatoInstace = NULL;
+        return tmp;
     }
     void SmaatoLoader::requestAdsView(Smaato* smaato)
     {
@@ -64,7 +88,7 @@ NS_CC_BEGIN
         if (adsStatus == ADS_NaN) {
             adsStatus = ADS_init;
         }
-        _smaatoInstace =  smaato;
+        _smaatoInstace = smaato;
         if (_smaatoInstace) {
             _smaatoInstace->showAds();
         }
@@ -142,7 +166,9 @@ NS_CC_BEGIN
                     url.append("&dimension=sky");
                     break;
             }
-            url.append("&dimensionstrict=true");
+            if (dimension != D_mma) {
+                url.append("&dimensionstrict=true");
+            }
             url.append("&response=XML");
 
             request->setUrl(url.c_str());
@@ -173,6 +199,9 @@ NS_CC_BEGIN
         duration = 0;
         adsStatusMutex = PTHREAD_MUTEX_INITIALIZER;
         dimension = D_medrect;
+        adsTag = ADS_TAG;
+        adsAttachedStatus = false;
+        adsZoder = ADS_OZDER;
     }
     void SmaatoLoader::getAdsCallback(HttpClient* client, HttpResponse* response)
     {
@@ -332,7 +361,7 @@ NS_CC_BEGIN
     {
         if (_smaatoInstace != NULL) {
             adsStatus = ADS_Ready;
-            _smaatoInstace->updateUI(target,sprite);
+            _smaatoInstace->updateUI(target, sprite);
             downloadBeacons(beancons);
         }
 

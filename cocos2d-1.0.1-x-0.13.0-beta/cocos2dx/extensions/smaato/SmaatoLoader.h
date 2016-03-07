@@ -20,6 +20,10 @@ using namespace cocos2d::network;
 #define REFRESH_TIME 60
 #ifndef SMAATOLOADER_H_
 #define SMAATOLOADER_H_
+
+#define ADS_TAG 10201
+#define ADS_OZDER 10
+
 NS_CC_BEGIN
     enum AdsStatus
     {
@@ -42,8 +46,10 @@ NS_CC_BEGIN
 
         void stopAds();
         void requestAdsView(Smaato* smaato);
-        void removeAdsView();
-
+        Smaato*  removeAdsView();
+        void setAdsAttachedStatus(bool adsAttachedStatus);
+        void setAdsZoder(int adsZoder);
+        void setAdsTag(int adsTag);
     protected:
         void requestAdsInternal();
         void dowloadImage(const char* url, char* target, std::vector<char*>* beacons);
@@ -52,6 +58,9 @@ NS_CC_BEGIN
         void downloadBeacons(std::vector<char*>* beacons);
 
     protected:
+        int adsTag;
+        int adsAttachedStatus;
+        int adsZoder;
         static SmaatoLoader* pInstance;
         Smaato* _smaatoInstace;
         float duration;
