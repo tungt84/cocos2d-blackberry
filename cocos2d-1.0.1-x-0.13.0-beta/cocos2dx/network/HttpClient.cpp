@@ -209,6 +209,9 @@ static bool configureCURL(CURL *handle, char *errorBuffer)
     if (code != CURLE_OK) {
         return false;
     }
+
+    //curl_easy_setopt(handle, CURLOPT_VERBOSE, 1L);
+
     code = curl_easy_setopt(handle, CURLOPT_TIMEOUT, HttpClient::getInstance()->getTimeoutForRead());
     if (code != CURLE_OK) {
         return false;
