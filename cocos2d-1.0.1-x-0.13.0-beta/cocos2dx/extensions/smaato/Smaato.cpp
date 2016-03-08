@@ -64,14 +64,50 @@ NS_CC_BEGIN
         this->addChild(imageSprite, 1);
         if (closeSprite) {
             closeSprite->setPosition(
-                    ccp(size.width / 2 + sprite->getContentSize().width / 2,
-                            size.height / 2 + sprite->getContentSize().height / 2));
+                    ccp(size.width / 2 + imageSprite->getContentSize().width / 2,
+                            size.height / 2 + imageSprite->getContentSize().height / 2));
         }
         if (show) {
             setIsVisible(true);
         }
         this->sprite = imageSprite;
+        CCSprite *border = new CCSprite();
+        if (border && border->init()) {
+            border->autorelease();
+        } else {
+            CC_SAFE_DELETE(border);
+            border = NULL;
+        }
+        if (border) {
+            border->setTextureRectInPixels(
+                    CCRectMake(0, 0, imageSprite->getContentSize().width + 20,
+                            imageSprite->getContentSize().height + 20), false,
+                    CCSizeMake(imageSprite->getContentSize().width + 20,
+                            imageSprite->getContentSize().height + 20));
+            border->setPosition(ccp(size.width / 2, size.height / 2));
+            border->setColor(ccORANGE);
+            this->addChild(border);
+        }
+        CCSprite *blackBorder = new CCSprite();
+        if (blackBorder && blackBorder->init()) {
+            blackBorder->autorelease();
+        } else {
+            CC_SAFE_DELETE(blackBorder);
+            blackBorder = NULL;
+        }
+        if (blackBorder) {
+            blackBorder->setTextureRectInPixels(
+                    CCRectMake(0, 0, imageSprite->getContentSize().width + 10,
+                            imageSprite->getContentSize().height + 10), false,
+                    CCSizeMake(imageSprite->getContentSize().width + 10,
+                            imageSprite->getContentSize().height + 10));
+            blackBorder->setPosition(ccp(size.width / 2, size.height / 2));
+            blackBorder->setColor(ccWHITE);
+            this->addChild(blackBorder);
+        }
+
     }
+
     bool Smaato::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
     {
         if (sprite != NULL && target != NULL) {
@@ -79,6 +115,7 @@ NS_CC_BEGIN
             if (closeSprite != NULL
                     && CCRect::CCRectContainsPoint(closeSprite->boundingBox(), location)) {
                 hideAds();
+                return true;
             } else if (CCRect::CCRectContainsPoint(sprite->boundingBox(), location)) {
 
                 if (target) {
@@ -86,6 +123,7 @@ NS_CC_BEGIN
                     CC_SAFE_DELETE_ARRAY(target);
                     setIsVisible(false);
                 }
+                return  true;
             }
         }
         return false;

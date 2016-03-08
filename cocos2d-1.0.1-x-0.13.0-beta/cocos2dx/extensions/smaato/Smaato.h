@@ -60,7 +60,6 @@ NS_CC_BEGIN
         void showAds();
         void stopAds();
         void openUrl(const char* target);
-
         virtual bool init();
         virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
 
