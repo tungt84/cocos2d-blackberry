@@ -21,6 +21,8 @@ NS_CC_BEGIN
         target = NULL;
         sprite = NULL;
         show = false;
+        borderColor1 = ccWHITE;
+        borderColor2 = ccORANGE;
     }
 
     bool Smaato::init()
@@ -31,8 +33,27 @@ NS_CC_BEGIN
             return false;
         }
         setIsTouchEnabled(true);
-        CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this, TOUCH_DISPATCHER_PRIORITY, true);
+        CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this, TOUCH_DISPATCHER_PRIORITY,
+                true);
         setIsVisible(false);
+        border = new CCSprite();
+        if (border && border->init()) {
+            border->autorelease();
+        } else {
+            CC_SAFE_DELETE(border);
+            border = NULL;
+        }
+        blackBorder = new CCSprite();
+        if (blackBorder && blackBorder->init()) {
+            blackBorder->autorelease();
+        } else {
+            CC_SAFE_DELETE(blackBorder);
+            blackBorder = NULL;
+        }
+        if (border)
+            this->addChild(border, 0);
+        if (blackBorder)
+            this->addChild(blackBorder, 1);
         return true;
     }
 
@@ -49,6 +70,25 @@ NS_CC_BEGIN
         show = true;
 
     }
+    void Smaato::setCloseSprite(CCSprite* closeSprite)
+    {
+        if (this->closeSprite) {
+            CCSprite * tmp = this->closeSprite;
+            this->removeChild(tmp, true);
+        }
+        this->closeSprite = closeSprite;
+        if (closeSprite) {
+            this->addChild(closeSprite, 3);
+        }
+    }
+    void Smaato::setBorderColor1(ccColor3B borderColor1)
+    {
+        this->borderColor1 = borderColor1;
+    }
+    void Smaato::setBorderColor2(ccColor3B borderColor2)
+    {
+        this->borderColor2 = borderColor2;
+    }
     void Smaato::updateUI(char* target, CCSprite* imageSprite)
     {
         CC_SAFE_DELETE_ARRAY(this->target);
@@ -61,7 +101,7 @@ NS_CC_BEGIN
         }
         CCSize size = CCDirector::sharedDirector()->getWinSize();
         imageSprite->setPosition(ccp(size.width / 2, size.height / 2));
-        this->addChild(imageSprite, 1);
+        this->addChild(imageSprite, 2);
         if (closeSprite) {
             closeSprite->setPosition(
                     ccp(size.width / 2 + imageSprite->getContentSize().width / 2,
@@ -71,13 +111,6 @@ NS_CC_BEGIN
             setIsVisible(true);
         }
         this->sprite = imageSprite;
-        CCSprite *border = new CCSprite();
-        if (border && border->init()) {
-            border->autorelease();
-        } else {
-            CC_SAFE_DELETE(border);
-            border = NULL;
-        }
         if (border) {
             border->setTextureRectInPixels(
                     CCRectMake(0, 0, imageSprite->getContentSize().width + 20,
@@ -85,15 +118,8 @@ NS_CC_BEGIN
                     CCSizeMake(imageSprite->getContentSize().width + 20,
                             imageSprite->getContentSize().height + 20));
             border->setPosition(ccp(size.width / 2, size.height / 2));
-            border->setColor(ccORANGE);
-            this->addChild(border);
-        }
-        CCSprite *blackBorder = new CCSprite();
-        if (blackBorder && blackBorder->init()) {
-            blackBorder->autorelease();
-        } else {
-            CC_SAFE_DELETE(blackBorder);
-            blackBorder = NULL;
+            border->setColor(borderColor2);
+
         }
         if (blackBorder) {
             blackBorder->setTextureRectInPixels(
@@ -102,8 +128,8 @@ NS_CC_BEGIN
                     CCSizeMake(imageSprite->getContentSize().width + 10,
                             imageSprite->getContentSize().height + 10));
             blackBorder->setPosition(ccp(size.width / 2, size.height / 2));
-            blackBorder->setColor(ccWHITE);
-            this->addChild(blackBorder);
+            blackBorder->setColor(borderColor1);
+
         }
 
     }
@@ -124,6 +150,8 @@ NS_CC_BEGIN
                     setIsVisible(false);
                     return true;
                 }
+            }else if (CCRect::CCRectContainsPoint(border->boundingBox(), location)) {
+                return true;
             }
         }
         return false;

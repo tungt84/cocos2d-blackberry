@@ -103,6 +103,13 @@ NS_CC_BEGIN
     }
     void SmaatoLoader::requestAdsInternal()
     {
+#if DEGUG_SMA
+        SmaatoDimension test[4]={D_medrect, //(300 x 250)
+            D_sky, //(120 x 600)
+            D_leader, //(728 x 90)
+            D_full_320x480};
+        this->dimension =  test[random()%4];
+#endif
         bool run = false;
         pthread_mutex_lock(&adsStatusMutex);
         if (adsStatus == ADS_init || adsStatus == ADS_Ready) {
@@ -198,7 +205,7 @@ NS_CC_BEGIN
         adsStatus = ADS_NaN;
         duration = 0;
         adsStatusMutex = PTHREAD_MUTEX_INITIALIZER;
-        dimension = D_medrect;
+        dimension = D_mma;
         adsTag = ADS_TAG;
         adsAttachedStatus = false;
         adsZoder = ADS_OZDER;

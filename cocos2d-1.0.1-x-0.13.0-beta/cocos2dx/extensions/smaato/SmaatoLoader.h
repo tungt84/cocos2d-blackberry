@@ -24,6 +24,7 @@ using namespace cocos2d::network;
 #define ADS_TAG 10201
 #define ADS_OZDER 10
 
+#define DEGUG_SMA 1
 NS_CC_BEGIN
     enum AdsStatus
     {

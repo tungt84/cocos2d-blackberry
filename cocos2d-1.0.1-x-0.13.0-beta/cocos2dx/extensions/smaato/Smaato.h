@@ -65,24 +65,19 @@ NS_CC_BEGIN
         virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
 
         LAYER_NODE_FUNC(Smaato)
-
-        void setCloseSprite(CCSprite* closeSprite)
-        {
-            if (this->closeSprite) {
-                this->removeChild(this->closeSprite, true);
-            }
-            this->closeSprite = closeSprite;
-            if (closeSprite) {
-                this->addChild(closeSprite, 2);
-            }
-        }
+        void setCloseSprite(CCSprite* closeSprite);
         void updateUI(char* target,CCSprite* imageSprite);
-
+        void setBorderColor1(ccColor3B borderColor1);
+        void setBorderColor2(ccColor3B borderColor2);
     protected:
 
         char* target;
         CCSprite* sprite;
+        CCSprite *border;
         CCSprite* closeSprite;
+        CCSprite *blackBorder;
+        ccColor3B borderColor1;
+        ccColor3B borderColor2;
         bool show;
         //_pSelector;      /// callback function, e.g. MyLaRef*                        _pTarget;        /// callback target of pSelector function
         //SEL_TargetLink           yer::onTargetLink(const char* target){navigator_invoke(target, 0);}
