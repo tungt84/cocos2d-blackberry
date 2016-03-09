@@ -19,6 +19,7 @@
 using namespace cocos2d::network;
 #define SMA_URL "http://soma.smaato.net/oapi/reqAd.jsp"
 #define REFRESH_TIME 60
+#define TOUCH_DISPATCHER_PRIORITY kCCMenuTouchPriority-30
 NS_CC_BEGIN
     typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
     enum SmaatoAdspaceSize

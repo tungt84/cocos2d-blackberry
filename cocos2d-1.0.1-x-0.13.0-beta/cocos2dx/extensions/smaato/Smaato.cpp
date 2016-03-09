@@ -31,7 +31,7 @@ NS_CC_BEGIN
             return false;
         }
         setIsTouchEnabled(true);
-        CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this, 0, true);
+        CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this, TOUCH_DISPATCHER_PRIORITY, true);
         setIsVisible(false);
         return true;
     }
@@ -122,8 +122,8 @@ NS_CC_BEGIN
                     openUrl(target);
                     CC_SAFE_DELETE_ARRAY(target);
                     setIsVisible(false);
+                    return true;
                 }
-                return  true;
             }
         }
         return false;
