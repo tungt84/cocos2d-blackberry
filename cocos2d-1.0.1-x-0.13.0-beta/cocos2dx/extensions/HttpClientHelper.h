@@ -22,34 +22,14 @@ using std::endl;
 
 NS_CC_BEGIN;
 
-#ifndef COCOS2D_VERSION_1X
-#define  COCOS2D_VERSION_1X 0x00010000
-#endif
-
-#ifndef COCOS2D_VERSION_2X
-#define  COCOS2D_VERSION_2X 0x00020000
-#endif
-
-#ifndef COCOS2D_VERSION_3X
-#define  COCOS2D_VERSION_3X 0x00030000
-#endif
-
-#ifndef USING_COCOS2D_VERSION
-#if COCOS2D_VERSION >= COCOS2D_VERSION_3X
-#define USING_COCOS2D_VERSION COCOS2D_VERSION_3X
-#elif COCOS2D_VERSION >= COCOS2D_VERSION_2X
-#define USING_COCOS2D_VERSION COCOS2D_VERSION_2X
-#elif COCOS2D_VERSION >= COCOS2D_VERSION_1X
-#define USING_COCOS2D_VERSION COCOS2D_VERSION_1X
-#endif
-#endif
+#include "Cocos2dHelper.h"
 
 #if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
 #define HttpRequest_GET cocos2d::network::HttpRequest::GET
 #define HttpRequest_ResponseCallbackSelector(SELECTOR,TARGET) TARGET,httpresponse_selector(SELECTOR)
 #else
 #define HttpRequest_GET cocos2d::network::HttpRequest::Type::GET
-#define HttpRequest_ResponseCallbackSelector(SELECTOR,TARGER) CC_CALLBACK_2(SELECTOR,TARGET)
+#define HttpRequest_ResponseCallbackSelector(SELECTOR,TARGET) CC_CALLBACK_2(SELECTOR,TARGET)
 #endif
 
 

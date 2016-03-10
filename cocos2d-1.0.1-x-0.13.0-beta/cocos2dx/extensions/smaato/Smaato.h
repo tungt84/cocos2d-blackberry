@@ -10,16 +10,25 @@
 #include "cocos2d.h"
 #include "extensions/HttpClientHelper.h"
 #include <string>
-#include <extensions/pugixml/pugixml.hpp>
+#include "extensions/pugixml/pugixml.hpp"
 
-#include <platform/CCImage.h>
-#include <CCTexture2D.h>
-#include <CCSprite.h>
+#include "platform/CCImage.h"
+
+
 #include <pthread.h>
 using namespace cocos2d::network;
 #define SMA_URL "http://soma.smaato.net/oapi/reqAd.jsp"
 #define REFRESH_TIME 60
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
+#include <CCTexture2D.h>
+#include <CCSprite.h>
 #define TOUCH_DISPATCHER_PRIORITY kCCMenuTouchPriority-30
+#endif
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_3X
+#include "renderer/CCTexture2D.h"
+#include "2d/CCSprite.h"
+#endif
+
 NS_CC_BEGIN
     typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
     enum SmaatoAdspaceSize
@@ -62,20 +71,25 @@ NS_CC_BEGIN
         void stopAds();
         void openUrl(const char* target);
         virtual bool init();
+#if  USING_COCOS2D_VERSION ==  COCOS2D_VERSION_1X
         virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
-
         LAYER_NODE_FUNC(Smaato)
-        void setCloseSprite(CCSprite* closeSprite);
-        void updateUI(char* target,CCSprite* imageSprite);
-        void setBorderColor1(ccColor3B borderColor1);
-        void setBorderColor2(ccColor3B borderColor2);
-    protected:
+#endif
+#if  USING_COCOS2D_VERSION ==  COCOS2D_VERSION_3X
+		virtual bool onTouchBegan(Touch *touch, Event *event);
+        CREATE_FUNC(Smaato);
 
+#endif
+        void setCloseSprite(ccSprite* closeSprite);
+		void updateUI(char* target,ccSprite* imageSprite);
+		void setBorderColor1(ccColor3B borderColor1);
+		void setBorderColor2(ccColor3B borderColor2);
+    protected:
         char* target;
-        CCSprite* sprite;
-        CCSprite *border;
-        CCSprite* closeSprite;
-        CCSprite *blackBorder;
+        ccSprite* sprite;
+        ccSprite *border;
+        ccSprite* closeSprite;
+        ccSprite *blackBorder;
         ccColor3B borderColor1;
         ccColor3B borderColor2;
         bool show;

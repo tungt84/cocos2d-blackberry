@@ -1,6 +1,6 @@
 #include "CacheGif.h"
 #include "GIFMovie.h"
-
+#include "../Cocos2dHelper.h"
 USING_NS_CC;
 
 CacheGif::CacheGif()
@@ -30,7 +30,12 @@ CacheGif::~CacheGif()
             //1. just GifSprieFrame retain
             //2. CCSpriteFrameCache and GifSprieFrame retain
             //more. other gif CacheGif retain
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
 			if(spriteFrame->retainCount() == 1 || (spriteFrame->retainCount() ==2 && spriteFrameInCache))
+#endif
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_3X
+			if(spriteFrame->getReferenceCount() == 1 || (spriteFrame->getReferenceCount()  ==2 && spriteFrameInCache))
+#endif
 			{
 				CCTexture2D* texture = sprite->getSpriteFrame()->getTexture();
 				CCTextureCache::sharedTextureCache()->removeTexture(texture);
@@ -105,8 +110,12 @@ CCSpriteFrame* CacheGif::getGifSpriteFrame(Bitmap* bm, int index)
 	{
 		CCTexture2D* texture = createTexture(bm,index,true);
 		CC_BREAK_IF(! texture);
-
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
 		spriteFrame = CCSpriteFrame::frameWithTexture(texture, CCRectMake(0,0,texture->getContentSize().width, texture->getContentSize().height));
+#endif
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_3X
+		spriteFrame = CCSpriteFrame::createWithTexture(texture, CCRectMake(0,0,texture->getContentSize().width, texture->getContentSize().height));
+#endif
 		CC_BREAK_IF(! spriteFrame);
 
 		CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFrame(spriteFrame, gifFrameName.c_str());

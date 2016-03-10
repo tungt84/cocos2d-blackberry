@@ -1,6 +1,6 @@
 #include "GifBase.h"
 using namespace cocos2d;
-
+#include "../Cocos2dHelper.h"
 CCTexture2D* GifBase::createTexture(Bitmap* bm, int index, bool getCache)
 {
 	std::string textureName = getGifFrameName(index);
@@ -24,7 +24,12 @@ CCTexture2D* GifBase::createTexture(Bitmap* bm, int index, bool getCache)
 	{
 		bool res = true;
 		const uint32_t* RgbaData = bm->getRGBA();
+#if USING_COCOS2D_VERSION ==COCOS2D_VERSION_1X
 		res = img->initWithImageData((void*)RgbaData,bm->getPixelLenth() ,CCImage::kFmtRawData, bm->m_width, bm->m_hight, 8);
+#endif
+#if USING_COCOS2D_VERSION ==COCOS2D_VERSION_3X
+		res = img->initWithRawData((const unsigned char *)RgbaData,bm->getPixelLenth() , bm->m_width, bm->m_hight, 8);
+#endif
 		if(!res) break;
 
 		CCTextureCache::sharedTextureCache()->removeTextureForKey(textureName.c_str());

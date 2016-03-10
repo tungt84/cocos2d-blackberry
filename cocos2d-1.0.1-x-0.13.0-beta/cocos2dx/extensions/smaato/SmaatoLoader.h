@@ -4,16 +4,22 @@
  *  Created on: Mar 7, 2016
  *      Author: tungt
  */
-#include <cocos2d.h>
-#include <extensions/smaato/Smaato.h>
+#include "cocos2d.h"
+#include "extensions/smaato/Smaato.h"
 #include <list>
 #include "extensions/HttpClientHelper.h"
 #include <string>
-#include <extensions/pugixml/pugixml.hpp>
+#include "extensions/pugixml/pugixml.hpp"
 
-#include <platform/CCImage.h>
-#include <CCTexture2D.h>
-#include <CCSprite.h>
+#include "platform/CCImage.h"
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
+#include "CCTexture2D.h"
+#include "CCSprite.h"
+#endif
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_3X
+#include "renderer/CCTexture2D.h"
+#include "2d/CCSprite.h"
+#endif
 #include <pthread.h>
 using namespace cocos2d::network;
 #define SMA_URL "http://soma.smaato.net/oapi/reqAd.jsp"
@@ -24,7 +30,14 @@ using namespace cocos2d::network;
 #define ADS_TAG 10201
 #define ADS_OZDER 10
 
-#define DEGUG_SMA 1
+
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
+#define ccSmaatoCreate() cocos2d::Smaato::node()
+#endif
+
+#if USING_COCOS2D_VERSION == COCOS2D_VERSION_3X
+#define ccSmaatoCreate() cocos2d::Smaato::create()
+#endif
 NS_CC_BEGIN
     enum AdsStatus
     {
@@ -43,7 +56,7 @@ NS_CC_BEGIN
         void setPub(int pub);
         void getAdsCallback(HttpClient* client, HttpResponse* response);
         void downloadImage(HttpClient* client, HttpResponse* response, char* target,
-                vector<char*>* beacons);
+                std::vector<char*>* beacons);
 
         void stopAds();
         void requestAdsView(Smaato* smaato);
@@ -74,6 +87,8 @@ NS_CC_BEGIN
         char* device;
         SmaatoFormat format;
         SmaatoDimension dimension;
+        SmaatoDimension* supportedDimension;
+        int numberOfSupportDimension;
 
     };
     class SmaatoAdsRequestCallback: public Ref
