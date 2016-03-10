@@ -222,8 +222,14 @@ SmaatoLoader::SmaatoLoader() {
 	adspace = 0;
 	pub = 0;
 	device = new char[120];
+#ifdef __QNX__
 	strcpy(device,
 			"Mozilla/5.0 (BB10; Kbd) AppleWebKit/537.10+ (KHTML, like Gecko) Version/10.1.0.4633 Mobile Safari/537.10+");
+#endif
+#ifdef TIZEN
+	strcpy(device,
+	         "Mozilla/5.0 (Linux; Tizen 2.2; sdk) AppleWebKit/537.3 (KHTML, like Gecko) Version/2.2 Mobile Safari/537.3");
+#endif
 	format = SF_img;
 	_smaatoInstace = NULL;
 	requestedAds = false;
@@ -260,7 +266,6 @@ void SmaatoLoader::getAdsCallback(HttpClient* client, HttpResponse* response) {
 		file_char[i] = buffer->at(i);
 	}
 	pugi::xml_document doc;
-
 	pugi::xml_parse_result result = doc.load(file_char);
 	if (result.status == pugi::status_ok) {
 		pugi::xml_node response = doc.child("response");
