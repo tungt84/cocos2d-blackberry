@@ -8,19 +8,10 @@
 #include <extensions/smaato/Smaato.h>
 #ifdef __ANDROID__
 #include "cocos2d.h"
-#include "platform/android/jni/JniHelper.h"
+#include "platform/android/jni/Java_org_cocos2dx_lib_Cocos2dxHelper.h"
 NS_CC_BEGIN
 void Smaato::openUrl(const char* target){
-	JniMethodInfo t;
-	if (JniHelper::getStaticMethodInfo(t,
-        "org/cocos2dx/lib/Cocos2dxHelper",
-        "openURL",
-        "(Ljava/lang/String;)V")) {
-    jstring stringArg = t.env->NewStringUTF(target);
-    t.env->CallStaticIntMethod(t.classID, t.methodID, stringArg);
-    t.env->DeleteLocalRef(stringArg);
-    t.env->DeleteLocalRef(t.classID);
-}
+	openURLJNI(target);
 }
 NS_CC_END
 #endif
