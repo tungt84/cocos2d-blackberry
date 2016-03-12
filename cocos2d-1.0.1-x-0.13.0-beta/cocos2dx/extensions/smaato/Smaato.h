@@ -30,28 +30,12 @@ using namespace cocos2d::network;
 #endif
 
 NS_CC_BEGIN
+	enum SmaatoAdsPosition{
+		SMA_Pos_Top,
+		SMA_Pos_Middle,
+		SMA_Pos_Bottom
+	};
     typedef void (cocos2d::Ref::*SEL_TargetLink)(const char* target);
-    enum SmaatoAdspaceSize
-    {
-        MMA_Small, //120x20
-        MMA_Medium, //168x28
-        MMA_Large, //216x36
-        MMA_XLarge, //300x50
-        MMA_XXLarge //320x50
-    };
-    enum SmaatoDimension
-    {
-        D_mma, // Any MMA size
-        D_medrect, //(300 x 250)
-        D_sky, //(120 x 600)
-        D_leader, //(728 x 90)
-        D_full_320x480,
-        D_full_768x1024
-    };
-    enum SmaatoFormat
-    {
-        SF_all, SF_img, SF_txt, SF_richmedia, SF_vast, SF_native
-    };
     /**
      *
      * Smaato* smaato = Smaato::node();
@@ -84,8 +68,11 @@ NS_CC_BEGIN
 		void updateUI(char* target,ccSprite* imageSprite);
 		void setBorderColor1(ccColor3B borderColor1);
 		void setBorderColor2(ccColor3B borderColor2);
+		void setHasBorder(bool hasBorder);
     protected:
         char* target;
+        bool hasBorder;
+        SmaatoAdsPosition adsPosition;
         ccSprite* sprite;
         ccSprite *border;
         ccSprite* closeSprite;

@@ -28,6 +28,8 @@ Smaato::Smaato() {
 	borderColor2 = Color3B::ORANGE;
 	border = NULL;
 	blackBorder = NULL;
+	hasBorder = false;
+	adsPosition = SMA_Pos_Top;
 #endif
 }
 
@@ -73,10 +75,22 @@ bool Smaato::init() {
 	border = Sprite::create();
 	blackBorder = Sprite::create();
 #endif
-	if (border)
+	if (border) {
 		this->addChild(border, 0);
-	if (blackBorder)
+		if (hasBorder) {
+			ccSetVisible(border, true);
+		} else {
+			ccSetVisible(border, false);
+		}
+	}
+	if (blackBorder) {
 		this->addChild(blackBorder, 1);
+		if (hasBorder) {
+			ccSetVisible(blackBorder, true);
+		} else {
+			ccSetVisible(blackBorder, false);
+		}
+	}
 	return true;
 }
 
@@ -107,6 +121,9 @@ void Smaato::setBorderColor1(ccColor3B borderColor1) {
 void Smaato::setBorderColor2(ccColor3B borderColor2) {
 	this->borderColor2 = borderColor2;
 }
+void Smaato::setHasBorder(bool hasBorder) {
+	this->hasBorder = hasBorder;
+}
 void Smaato::updateUI(char* target, ccSprite* imageSprite) {
 	CC_SAFE_DELETE_ARRAY(this->target);
 	this->target = target;
@@ -117,42 +134,56 @@ void Smaato::updateUI(char* target, ccSprite* imageSprite) {
 
 	}
 	ccSize size = ccGetWinSize();
-	ccSetPosition(imageSprite, size.width / 2, size.height / 2);
+	if (adsPosition == SMA_Pos_Middle) {
+		ccSetPosition(imageSprite, size.width / 2, size.height / 2);
+	}else if(adsPosition == SMA_Pos_Top){
+		ccSetPosition(imageSprite, size.width / 2, size.height - imageSprite->getContentSize().width / 2);
+	}
 	this->addChild(imageSprite, 2);
 	if (closeSprite) {
-		int width =
-				size.width / 2 + imageSprite->getContentSize().width / 2
-						+ closeSprite->getContentSize().width / 2 > size.width ?
-						(size.width / 2
-								+ imageSprite->getContentSize().width / 2
-								- closeSprite->getContentSize().width / 2) :
-						(size.width / 2
-								+ imageSprite->getContentSize().width / 2);
-		int height =
-				size.height / 2 + imageSprite->getContentSize().height / 2
-						+ closeSprite->getContentSize().height / 2
-						> size.height ?
-						(size.height / 2
-								+ imageSprite->getContentSize().height / 2
-								- closeSprite->getContentSize().height / 2) :
-						(size.height / 2
-								+ imageSprite->getContentSize().height / 2);
-		ccSetPosition(closeSprite, width, height);
+		if (adsPosition == SMA_Pos_Middle) {
+			int width =
+					size.width / 2 + imageSprite->getContentSize().width / 2
+							+ closeSprite->getContentSize().width / 2
+							> size.width ?
+							(size.width / 2
+									+ imageSprite->getContentSize().width / 2
+									- closeSprite->getContentSize().width / 2) :
+							(size.width / 2
+									+ imageSprite->getContentSize().width / 2);
+			int height =
+					size.height / 2 + imageSprite->getContentSize().height / 2
+							+ closeSprite->getContentSize().height / 2
+							> size.height ?
+							(size.height / 2
+									+ imageSprite->getContentSize().height / 2
+									- closeSprite->getContentSize().height / 2) :
+							(size.height / 2
+									+ imageSprite->getContentSize().height / 2);
+			ccSetPosition(closeSprite, width, height);
+		}
 	}
 	if (show) {
 		ccSetVisible(this, true);
 	}
 	this->sprite = imageSprite;
+
 	if (border) {
 		ccRect rect = ccRectMake(0, 0, imageSprite->getContentSize().width + 20,
 				imageSprite->getContentSize().height + 20);
 		ccSize untrimmedSize = ccSizeMake(
 				imageSprite->getContentSize().width + 20,
 				imageSprite->getContentSize().height + 20);
-		ccSetPosition(border, size.width / 2, size.height / 2);
+		if (adsPosition == SMA_Pos_Middle) {
+			ccSetPosition(border, size.width / 2, size.height / 2);
+		}
 		ccSetTextureRect(border, rect, false, untrimmedSize);
 		border->setColor(borderColor2);
-
+		if (hasBorder) {
+			ccSetVisible(border, true);
+		} else {
+			ccSetVisible(border, false);
+		}
 	}
 	if (blackBorder) {
 		ccRect rect = ccRectMake(0, 0, imageSprite->getContentSize().width + 10,
@@ -161,8 +192,15 @@ void Smaato::updateUI(char* target, ccSprite* imageSprite) {
 				imageSprite->getContentSize().width + 10,
 				imageSprite->getContentSize().height + 10);
 		ccSetTextureRect(blackBorder, rect, false, untrimmedSize);
-		ccSetPosition(blackBorder, size.width / 2, size.height / 2);
+		if (adsPosition == SMA_Pos_Middle) {
+			ccSetPosition(blackBorder, size.width / 2, size.height / 2);
+		}
 		blackBorder->setColor(borderColor1);
+		if (hasBorder) {
+			ccSetVisible(blackBorder, true);
+		} else {
+			ccSetVisible(blackBorder, false);
+		}
 
 	}
 

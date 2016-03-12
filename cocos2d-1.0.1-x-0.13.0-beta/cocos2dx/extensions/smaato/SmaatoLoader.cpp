@@ -66,7 +66,9 @@ bool SmaatoLoader::init() {
 	return true;
 }
 void SmaatoLoader::setAdsAttachedStatus(bool adsAttachedStatus) {
+	pthread_mutex_lock(&adsAttachedStatusMutex);
 	this->adsAttachedStatus = adsAttachedStatus;
+	pthread_mutex_unlock(&adsAttachedStatusMutex);
 }
 void SmaatoLoader::setAdsZoder(int adsZoder) {
 	this->adsZoder = adsZoder;
@@ -75,17 +77,19 @@ void SmaatoLoader::setAdsTag(int adsTag) {
 	this->adsTag = adsTag;
 }
 void SmaatoLoader::update(float dt) {
+	pthread_mutex_lock(&adsAttachedStatusMutex);
 	if (adsAttachedStatus) {
 		CCScene *scene = CCDirector::sharedDirector()->getRunningScene();
 		if (scene) {
 			int tag = scene->getTag();
 			if (tag == adsTag && _smaatoInstace != NULL) {
 				adsAttachedStatus = false;
-				scene->addChild(_smaatoInstace, adsZoder);
+				scene->addChild(_smaatoInstace, adsZoder,-1);
 			}
 		}
 
 	}
+	pthread_mutex_unlock(&adsAttachedStatusMutex);
 	if (requestedAds && adsStatus == ADS_init) { //first time
 		requestAdsInternal();
 	} else {
@@ -106,6 +110,12 @@ void SmaatoLoader::stopAds() {
 	if (_smaatoInstace) {
 		_smaatoInstace->hideAds();
 	}
+}
+void SmaatoLoader::setDimension(SmaatoDimension dimension){
+	this->dimension =  dimension;
+}
+void SmaatoLoader::setAutoCheckDimesion(bool autoCheckDimesion){
+	this->autoCheckDimesion =  autoCheckDimesion;
 }
 
 Smaato* SmaatoLoader::removeAdsView() {
@@ -130,10 +140,11 @@ void SmaatoLoader::setPub(int pub) {
 	this->pub = pub;
 }
 void SmaatoLoader::requestAdsInternal() {
-
-	srand (time(NULL));
-	if(numberOfSupportDimension>0){
-		this->dimension  =  supportedDimension[random()%numberOfSupportDimension];
+	if(autoCheckDimesion){
+		srand (time(NULL));
+		if(numberOfSupportDimension>0){
+			this->dimension  =  supportedDimension[random()%numberOfSupportDimension];
+		}
 	}
 	bool run = false;
 	pthread_mutex_lock(&adsStatusMutex);
@@ -198,6 +209,9 @@ void SmaatoLoader::requestAdsInternal() {
 		case D_sky:
 			url.append("&dimension=sky");
 			break;
+		case D_small:
+			url.append("&dimension=small");
+			break;
 		}
 		if (dimension != D_mma) {
 			url.append("&dimensionstrict=true");
@@ -242,6 +256,8 @@ SmaatoLoader::SmaatoLoader() {
 	adsZoder = ADS_OZDER;
 	supportedDimension=NULL;
 	numberOfSupportDimension=0;
+	autoCheckDimesion =  false;
+	adsAttachedStatusMutex = PTHREAD_MUTEX_INITIALIZER;
 }
 void SmaatoLoader::getAdsCallback(HttpClient* client, HttpResponse* response) {
 	if (!response) {

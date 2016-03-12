@@ -39,6 +39,28 @@ using namespace cocos2d::network;
 #define ccSmaatoCreate() cocos2d::Smaato::create()
 #endif
 NS_CC_BEGIN
+	enum SmaatoAdspaceSize
+   {
+       MMA_Small, //120x20
+       MMA_Medium, //168x28
+       MMA_Large, //216x36
+       MMA_XLarge, //300x50
+       MMA_XXLarge //320x50
+   };
+   enum SmaatoDimension
+   {
+       D_mma, // Any MMA size
+       D_medrect, //(300 x 250)
+       D_sky, //(120 x 600)
+       D_leader, //(728 x 90)
+       D_full_320x480,
+       D_full_768x1024,
+       D_small
+   };
+   enum SmaatoFormat
+   {
+       SF_all, SF_img, SF_txt, SF_richmedia, SF_vast, SF_native
+   };
     enum AdsStatus
     {
         ADS_NaN, ADS_init, ADS_Requesting, ADS_Ready
@@ -54,6 +76,8 @@ NS_CC_BEGIN
         bool init();
         void setAdspace(int adspace);
         void setPub(int pub);
+        void setAutoCheckDimesion(bool autoCheckDimesion);
+        void setDimension(SmaatoDimension dimension);
         void getAdsCallback(HttpClient* client, HttpResponse* response);
         void downloadImage(HttpClient* client, HttpResponse* response, char* target,
                 std::vector<char*>* beacons);
@@ -72,6 +96,7 @@ NS_CC_BEGIN
         void downloadBeacons(std::vector<char*>* beacons);
 
     protected:
+        bool autoCheckDimesion;
         int adsTag;
         int adsAttachedStatus;
         int adsZoder;
@@ -81,6 +106,7 @@ NS_CC_BEGIN
         bool requestedAds;
         AdsStatus adsStatus;
         pthread_mutex_t adsStatusMutex;
+        pthread_mutex_t adsAttachedStatusMutex;
         int apiver;
         int adspace;
         int pub;
