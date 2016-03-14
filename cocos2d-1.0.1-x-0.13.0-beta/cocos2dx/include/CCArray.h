@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __CCARRAY_H__
 
 #include "support/data_support/ccCArray.h"
-
+#define CC_INVALID_INDEX 0xffffffff
 /** @def CCARRAY_FOREACH
 A convience macro to iterate over a CCArray using. It is faster than the "fast enumeration" interface.
 @since v0.99.4
@@ -127,7 +127,7 @@ public:
 public:
     ccArray* data;
 
-private:
+public:
 	CCArray() : data(NULL) {};
 };
 
