@@ -19,16 +19,17 @@
 
 using std::cout;
 using std::endl;
-
-NS_CC_BEGIN;
-
+using  cocos2d::network::HttpRequest;
 #include "Cocos2dHelper.h"
+NS_CC_BEGIN
+
+
 
 #if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
-#define HttpRequest_GET cocos2d::network::HttpRequest::GET
+#define HttpRequest_GET HttpRequest::GET
 #define HttpRequest_ResponseCallbackSelector(SELECTOR,TARGET) TARGET,httpresponse_selector(SELECTOR)
 #else
-#define HttpRequest_GET cocos2d::network::HttpRequest::Type::GET
+#define HttpRequest_GET HttpRequest::Type::GET
 #define HttpRequest_ResponseCallbackSelector(SELECTOR,TARGET) CC_CALLBACK_2(SELECTOR,TARGET)
 #endif
 
@@ -37,7 +38,7 @@ NS_CC_BEGIN;
 std::string urlencode(const std::string &s);
 
 
-NS_CC_END;
+NS_CC_END
 
 
 

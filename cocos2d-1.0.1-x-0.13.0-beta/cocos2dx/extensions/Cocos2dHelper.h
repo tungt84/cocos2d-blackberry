@@ -7,7 +7,7 @@
 
 #ifndef COCOS2DHELPER_H_
 #define COCOS2DHELPER_H_
-
+#include "cocos2d.h"
 #ifndef COCOS2D_VERSION_1X
 #define  COCOS2D_VERSION_1X 0x00010000
 #endif
@@ -30,29 +30,77 @@
 #endif
 #endif
 
+
 #if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
-#define ccSize CCSize
-#define ccSprite CCSprite
-#define ccRect CCRect
+#include "extensions/GUI/CCScrollView.h"
+NS_CC_BEGIN
+typedef  CCSize ccSize;
+typedef  CCSprite ccSprite;
+typedef  CCRect ccRect;
+typedef  CCLayer ccLayer;
+typedef  CCTouch ccTouch;
+typedef  CCEvent ccEvent;
+typedef  CCPoint ccPoint;
+typedef  CCTexture2D ccTexture2D;
+typedef  CCSpriteFrameCache ccSpriteFrameCache;
+#define ccLocationInView(target) target->locationInView()
+#define ccLayerMake() CCLayer::node()
+#define ccSpriteWithFile(file,...) CCSprite::spriteWithFile(file,##__VA_ARGS__)
+#define ccSpriteWithSpriteFrameName(pszSpriteFrameName) CCSprite::spriteWithSpriteFrameName(pszSpriteFrameName)
+#define ccFrameWithTexture(pobTexture,rect,...) CCSpriteFrame::frameWithTexture(pobTexture,rect,##__VA_ARGS__)
+#define ccSharedTextureCache() CCTextureCache::sharedTextureCache()
+#define ccSharedSpriteFrameCache() CCSpriteFrameCache::sharedSpriteFrameCache()
 #define ccSetVisible(target,visible) target->setIsVisible(visible)
 #define ccGetWinSize() CCDirector::sharedDirector()->getWinSize()
+#define ccConvertToGL(p) CCDirector::sharedDirector()->convertToGL(p)
 #define ccSetPosition(target,x,y) target->setPosition(ccp(x,y))
 #define ccSetTextureRect(target,rect,rotated,untrimmedSize) target->setTextureRectInPixels(rect,rotated,untrimmedSize)
 #define ccRectMake(x, y, width, height) CCRectMake(x, y, width, height)
 #define ccSizeMake(width, height) CCSizeMake(width, height)
+NS_CC_END
+NS_CC_EXT_BEGIN
+typedef  CCScrollViewDelegate ccScrollViewDelegate;
+typedef  CCScrollView ccScrollView;
+NS_CC_EXT_END
 #endif
 
 #if USING_COCOS2D_VERSION == COCOS2D_VERSION_3X
-#define ccSize Size
-#define ccSprite Sprite
-#define ccColor3B Color3B
-#define ccRect Rect
+#include "extensions/GUI/CCScrollView/CCScrollView.h"
+
+NS_CC_BEGIN
+typedef Size ccSize;
+typedef Sprite ccSprite;
+typedef Layer ccLayer;
+typedef Rect ccRect;
+typedef Touch ccTouch;
+typedef Event ccEvent;
+typedef Vec2 ccPoint;
+typedef  Texture2D ccTexture2D;
+typedef  SpriteFrameCache ccSpriteFrameCache;
+#define ccLocationInView(target) target->getLocationInView()
+#define ccLayerMake() Layer::create()
+#define ccSpriteWithFile(file,...) Sprite::create(file,##__VA_ARGS__)
+#define ccSpriteWithSpriteFrameName(pszSpriteFrameName) Sprite::create(pszSpriteFrameName)
+#define ccFrameWithTexture(pobTexture,rect,...) SpriteFrame::createWithTexture(pobTexture,rect,##__VA_ARGS__)
+#define ccSharedTextureCache() Director::getInstance()->getTextureCache()
+#define ccSharedSpriteFrameCache() SpriteFrameCache::getInstance()
 #define ccSetVisible(target,visible) target->setVisible(visible)
 #define ccGetWinSize() Director::getInstance()->getWinSize()
+#define ccConvertToGL(p) Director::getInstance()->convertToGL(p)
 #define ccSetPosition(target,x,y) target->setPosition(x,y)
 #define ccSetTextureRect(target,rect,rotated,untrimmedSize) target->setTextureRect(rect,rotated,untrimmedSize)
 #define ccRectMake(x, y, width, height) Rect(x, y, width, height)
 #define ccSizeMake(width, height) ccSize(width, height)
+NS_CC_END
+
+NS_CC_EXT_BEGIN
+typedef ScrollViewDelegate ccScrollViewDelegate;
+typedef ScrollView ccScrollView;
+const ScrollView::Direction kCCScrollViewDirectionHorizontal = ScrollView::Direction::HORIZONTAL;
+const ScrollView::Direction kCCScrollViewDirectionVertical = ScrollView::Direction::VERTICAL;
+const ScrollView::Direction kCCScrollViewDirectionBoth = ScrollView::Direction::BOTH;
+const ScrollView::Direction kCCScrollViewDirectionNone = ScrollView::Direction::NONE;
+NS_CC_EXT_END
 #endif
 
 #endif /* COCOS2DHELPER_H_ */

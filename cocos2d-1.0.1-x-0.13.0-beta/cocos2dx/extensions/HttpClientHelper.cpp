@@ -11,7 +11,7 @@
 
 
 
-NS_CC_BEGIN;
+NS_CC_BEGIN
 
 
 
@@ -41,7 +41,7 @@ std::string urlencode(const std::string &s)
     return e.str();
 }
 
-NS_CC_END;
+NS_CC_END
 
 
 
