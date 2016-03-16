@@ -41,12 +41,14 @@ public:
     CCGuideScreen();
     virtual bool init();
     virtual ~CCGuideScreen();
-    virtual bool onSharedTouchBegan(ccTouch *pTouch, ccEvent *pEvent);
-    virtual void onSharedTouchMoved(ccTouch *pTouch, ccEvent *pEvent);
-    virtual void onSharedTouchEnded(ccTouch *pTouch, ccEvent *pEvent);
-    virtual void onSharedTouchCancelled(ccTouch *pTouch, ccEvent *pEvent);
+    ccOnSharedTouchBegan;
+    ccOnSharedTouchMoved;
+    ccOnSharedTouchEnded;
+    ccOnSharedTouchCancelled;
     virtual void scrollViewDidScroll(ccScrollView* view) ;
     virtual void scrollViewDidZoom(ccScrollView* view) ;
+    virtual void onEnter();
+    virtual void onExit();
 protected:
     void adjustScrollView(float offset);
 protected:
@@ -58,26 +60,6 @@ protected:
 #if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
 public:
     LAYER_NODE_FUNC(CCGuideScreen);
-    virtual bool ccTouchBegan(ccTouch *pTouch, ccEvent *pEvent){
-        return onSharedTouchBegan(pTouch,pEvent);
-    }
-    virtual void ccTouchMoved(ccTouch *pTouch, ccEvent *pEvent){
-        onSharedTouchMoved(pTouch,pEvent);
-    }
-    virtual void ccTouchEnded(ccTouch *pTouch, ccEvent *pEvent){
-        onSharedTouchEnded(pTouch,pEvent);
-    }
-    virtual void ccTouchCancelled(ccTouch *pTouch, ccEvent *pEvent){
-        onSharedTouchCancelled(pTouch,pEvent);
-    }
-    virtual void onEnter(){
-        CCLayer::onEnter();
-        CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this, 1, false);
-    }
-    virtual void onExit(){
-        CCTouchDispatcher::sharedDispatcher()->removeDelegate(this);
-        CCLayer::onExit();
-    }
 #endif
 #if USING_COCOS2D_VERSION == COCOS2D_VERSION_3X
 public:

@@ -57,6 +57,16 @@ typedef  CCSpriteFrameCache ccSpriteFrameCache;
 #define ccSetTextureRect(target,rect,rotated,untrimmedSize) target->setTextureRectInPixels(rect,rotated,untrimmedSize)
 #define ccRectMake(x, y, width, height) CCRectMake(x, y, width, height)
 #define ccSizeMake(width, height) CCSizeMake(width, height)
+#define ccNodeAddTouchOneByOneListener(node,target,ccTouchBegan,ccTouchMoved,ccTouchEnded,ccTouchCancelled,priority,swallowTouch,_listener)  CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(target, priority, swallowTouch);
+#define ccNodeRemoveTouchOneByOneListener(node,target,recursive)  CCTouchDispatcher::sharedDispatcher()->removeDelegate(target)
+#define ccOnSharedTouchBegan virtual bool onSharedTouchBegan(ccTouch *pTouch, ccEvent *pEvent);\
+		virtual bool ccTouchBegan(ccTouch *pTouch, ccEvent *pEvent){return onSharedTouchBegan(pTouch,pEvent);}
+#define ccOnSharedTouchMoved virtual void onSharedTouchMoved(ccTouch *pTouch, ccEvent *pEvent);\
+		virtual void ccTouchMoved(ccTouch *pTouch, ccEvent *pEvent) { onSharedTouchMoved(pTouch,pEvent);}
+#define ccOnSharedTouchEnded virtual void onSharedTouchEnded(ccTouch *pTouch, ccEvent *pEvent);\
+		virtual void ccTouchEnded(ccTouch *pTouch, ccEvent *pEvent){onSharedTouchEnded(pTouch,pEvent);}
+#define ccOnSharedTouchCancelled virtual void onSharedTouchCancelled(ccTouch *pTouch, ccEvent *pEvent);\
+		virtual void  ccTouchCancelled(ccTouch *pTouch, ccEvent *pEvent){ onSharedTouchCancelled(pTouch,pEvent); }
 NS_CC_END
 NS_CC_EXT_BEGIN
 typedef  CCScrollViewDelegate ccScrollViewDelegate;
@@ -91,6 +101,19 @@ typedef  SpriteFrameCache ccSpriteFrameCache;
 #define ccSetTextureRect(target,rect,rotated,untrimmedSize) target->setTextureRect(rect,rotated,untrimmedSize)
 #define ccRectMake(x, y, width, height) Rect(x, y, width, height)
 #define ccSizeMake(width, height) ccSize(width, height)
+#define ccOnSharedTouchBegan virtual bool onSharedTouchBegan(ccTouch *pTouch, ccEvent *pEvent)
+#define ccOnSharedTouchMoved virtual void onSharedTouchMoved(ccTouch *pTouch, ccEvent *pEvent)
+#define ccOnSharedTouchEnded virtual void onSharedTouchEnded(ccTouch *pTouch, ccEvent *pEvent)
+#define ccOnSharedTouchCancelled virtual void onSharedTouchCancelled(ccTouch *pTouch, ccEvent *pEvent)
+#define ccNodeAddTouchOneByOneListener(node,target,ccTouchBegan,ccTouchMoved,ccTouchEnded,ccTouchCancelled,priority,swallowTouch,_listener) EventListenerTouchOneByOne* _listener = EventListenerTouchOneByOne::create();\
+		_listener->onTouchBegan =CC_CALLBACK_2(ccTouchBegan,target);\
+		_listener->onTouchMoved =CC_CALLBACK_2(ccTouchMoved,target);\
+		_listener->onTouchEnded =CC_CALLBACK_2(ccTouchEnded,target);\
+		_listener->onTouchCancelled = CC_CALLBACK_2(ccTouchCancelled, target);\
+		_listener->setSwallowTouches(swallowTouch);\
+		node->getEventDispatcher()->addEventListenerWithSceneGraphPriority(_listener,node);
+#define ccNodeRemoveTouchOneByOneListener(node,target,recursive) node->getEventDispatcher()->removeEventListenersForTarget(target,recursive)
+
 NS_CC_END
 
 NS_CC_EXT_BEGIN
