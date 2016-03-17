@@ -137,7 +137,9 @@ void Smaato::updateUI(char* target, ccSprite* imageSprite) {
 	if (adsPosition == SMA_Pos_Middle) {
 		ccSetPosition(imageSprite, size.width / 2, size.height / 2);
 	}else if(adsPosition == SMA_Pos_Top){
-		ccSetPosition(imageSprite, size.width / 2, size.height - imageSprite->getContentSize().width / 2);
+		ccSetPosition(imageSprite, size.width / 2, size.height - imageSprite->getContentSize().height / 2);
+	}else {
+		ccSetPosition(imageSprite, size.width / 2, imageSprite->getContentSize().height / 2);
 	}
 	this->addChild(imageSprite, 2);
 	if (closeSprite) {

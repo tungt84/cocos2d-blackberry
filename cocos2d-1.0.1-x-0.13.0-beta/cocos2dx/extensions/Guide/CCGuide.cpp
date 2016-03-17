@@ -16,9 +16,13 @@ scrollView(NULL),
 m_backgroundFile(NULL),
 m_showPoint(false),
 m_activedPointFile(NULL),
-m_disablePointFile(NULL)
+m_disablePointFile(NULL),
+m_paddingPoint(10)
 {
 
+}
+void CCGuideScreen::setPaddingPoint(float paddingPoint) {
+	m_paddingPoint = paddingPoint;
 }
 void CCGuideScreen::setActivedPointFile(const char* activedPointFile) {
 	CC_SAFE_DELETE_ARRAY(m_activedPointFile);
@@ -104,35 +108,43 @@ void CCGuideScreen::setupUI() {
 			cache->addSpriteFrame(ccFrameWithTexture(text01,CCRectMake(0,0,pointSize.width,pointSize.height)),m_disablePointFile);
 			cache->addSpriteFrame(ccFrameWithTexture(text02,CCRectMake(0,0,pointSize.width,pointSize.height)),m_activedPointFile);
 			bool even = helpSpriteVector.size()%2==0;
-			if(even) {
-				int mid = helpSpriteVector.size()/2;
-				for (int i=0;i<helpSpriteVector.size();i++)
-				{
-					ccSprite *point = ccSpriteWithSpriteFrameName(m_disablePointFile);
-					point->setTag(100+i+1);
-					if(i<mid) {
-						point->setPosition(ccp(size.width/2 - ((mid-1-i)*(10+pointSize.width) + pointSize.width/2+5),pointSize.height+20));
+
+			int mid = helpSpriteVector.size()/2;
+			for (int i=0;i<helpSpriteVector.size();i++)
+			{
+				ccSprite *point = ccSpriteWithSpriteFrameName(m_disablePointFile);
+				point->setTag(100+i+1);
+				float h =pointSize.height+m_paddingPoint;
+				float w;
+				if(i<mid) {
+					if(even) {
+						w = size.width/2 - ((mid-1-i)*(m_paddingPoint+pointSize.width) + pointSize.width/2+m_paddingPoint/2);
+						point->setPosition(ccp(w,h));
 					} else {
-						point->setPosition(ccp(size.width/2 + ((i-mid)*(10+pointSize.width) + pointSize.width/2+5),pointSize.height+20));
+						w =size.width/2 - (mid-i)*(m_paddingPoint+pointSize.width);
+						point->setPosition(ccp(w,h));
 					}
-					this->addChild(point);
-				}
-			} else {
-				int mid = helpSpriteVector.size()/2;
-				for (int i=0;i<helpSpriteVector.size();i++)
-				{
-					ccSprite *point = ccSpriteWithSpriteFrameName(m_disablePointFile);
-					point->setTag(100+i+1);
-					if(i<mid) {
-						point->setPosition(ccp(size.width/2 - (mid-i)*(10+pointSize.width),pointSize.height+20));
-					} if(i==mid){
-						point->setPosition(ccp(size.width/2,pointSize.height+20));
-					}else {
-						point->setPosition(ccp(size.width/2 + ((i-mid)*(10+pointSize.width)),pointSize.height+20));
+
+				} else if(i==mid) {
+					if(even) {
+						w = size.width/2 + ((i-mid)*(m_paddingPoint+pointSize.width) + pointSize.width/2+m_paddingPoint/2);
+						point->setPosition(ccp(w,h));
+					} else {
+						w = size.width/2;
+						point->setPosition(ccp(w,h));
 					}
-					this->addChild(point);
+				} else {
+					if(even) {
+						w = size.width/2 + ((i-mid)*(m_paddingPoint+pointSize.width) + pointSize.width/2+m_paddingPoint/2);
+						point->setPosition(ccp(w,h));
+					} else {
+						w = size.width/2 + ((i-mid)*(m_paddingPoint+pointSize.width));
+						point->setPosition(ccp(w,h));
+					}
 				}
+				this->addChild(point);
 			}
+
 			ccSprite *point = (ccSprite *)this->getChildByTag(101);
 			point->setDisplayFrame(cache->spriteFrameByName(m_activedPointFile));
 		}
@@ -182,6 +194,9 @@ void CCGuideScreen::scrollViewDidZoom(ccScrollView* view) {
 
 }
 void CCGuideScreen::adjustScrollView(float offset) {
+	if(helpSpriteVector.size()==0) {
+		return;
+	}
 	ccSize size = ccGetWinSize();
 	ccSpriteFrameCache *cache = ccSharedSpriteFrameCache();
 	ccSprite *point;
@@ -201,9 +216,9 @@ void CCGuideScreen::adjustScrollView(float offset) {
 	if (m_page <1)
 	{
 		m_page = 1;
-	} else if(m_page > 6)
+	} else if(m_page > helpSpriteVector.size())
 	{
-		m_page =6;
+		m_page =helpSpriteVector.size();
 	}
 	if(m_showPoint&&m_activedPointFile) {
 		point = (ccSprite *)this->getChildByTag(100+m_page);

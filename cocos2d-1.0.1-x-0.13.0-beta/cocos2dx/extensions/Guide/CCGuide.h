@@ -56,6 +56,7 @@ public:
     void setShowPoint(bool showPoint);
     void setActivedPointFile(const char* activedPointFile);
     void setDisablePointFile(const char* disablePointFile);
+    void setPaddingPoint(float paddingPoint);
 protected:
     void adjustScrollView(float offset);
 protected:
@@ -64,6 +65,7 @@ protected:
     char* m_activedPointFile;
     char* m_disablePointFile;
     bool m_showPoint;
+    float m_paddingPoint;
     std::vector<char*> helpFilesVector;
     std::vector<ccSprite*> helpSpriteVector;
     ccSprite *bg;
