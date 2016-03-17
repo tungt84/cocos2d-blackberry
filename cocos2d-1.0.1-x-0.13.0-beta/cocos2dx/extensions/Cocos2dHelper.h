@@ -67,6 +67,10 @@ typedef  CCSpriteFrameCache ccSpriteFrameCache;
 		virtual void ccTouchEnded(ccTouch *pTouch, ccEvent *pEvent){onSharedTouchEnded(pTouch,pEvent);}
 #define ccOnSharedTouchCancelled virtual void onSharedTouchCancelled(ccTouch *pTouch, ccEvent *pEvent);\
 		virtual void  ccTouchCancelled(ccTouch *pTouch, ccEvent *pEvent){ onSharedTouchCancelled(pTouch,pEvent); }
+#define ccSharedScheduler() CCScheduler::sharedScheduler()
+#define ccUnscheduleAllSelectorsForTarget(scheduler,target) scheduler->unscheduleAllSelectorsForTarget(target)
+#define ccProgressWithFile(file) CCProgressTimer::progressWithFile(file)
+#define ccLabelWithString(string,fontName,fontSize) CCLabelTTF::labelWithString(string, fontName,  fontSize)
 NS_CC_END
 NS_CC_EXT_BEGIN
 typedef  CCScrollViewDelegate ccScrollViewDelegate;
@@ -113,7 +117,11 @@ typedef  SpriteFrameCache ccSpriteFrameCache;
 		_listener->setSwallowTouches(swallowTouch);\
 		node->getEventDispatcher()->addEventListenerWithSceneGraphPriority(_listener,node);
 #define ccNodeRemoveTouchOneByOneListener(node,target,recursive) node->getEventDispatcher()->removeEventListenersForTarget(target,recursive)
-
+#define ccSharedScheduler() CCDirector::getInstance()->getScheduler()
+#define ccUnscheduleAllSelectorsForTarget(scheduler,target) scheduler->unscheduleAllForTarget(target)
+#define ccProgressWithFile(file) ProgressTimer::create(Sprite::create(file))
+#define  kCCProgressTimerTypeHorizontalBarLR ProgressTimer::Type::BAR
+#define ccLabelWithString(string,fontName,fontSize) CCLabelTTF::create(string,fontName,fontSize)
 NS_CC_END
 
 NS_CC_EXT_BEGIN
