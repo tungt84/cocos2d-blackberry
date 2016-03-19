@@ -29,10 +29,10 @@
 #define USING_COCOS2D_VERSION COCOS2D_VERSION_1X
 #endif
 #endif
-
+#include "extensions/GUI/CCScrollView/CCScrollView.h"
 
 #if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
-#include "extensions/GUI/CCScrollView.h"
+
 NS_CC_BEGIN
 typedef  CCSize ccSize;
 typedef  CCSprite ccSprite;
@@ -79,7 +79,6 @@ NS_CC_EXT_END
 #endif
 
 #if USING_COCOS2D_VERSION == COCOS2D_VERSION_3X
-#include "extensions/GUI/CCScrollView/CCScrollView.h"
 
 NS_CC_BEGIN
 typedef Size ccSize;

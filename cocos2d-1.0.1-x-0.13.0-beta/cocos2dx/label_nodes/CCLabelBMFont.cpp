@@ -140,9 +140,9 @@ namespace cocos2d{
 	/*
 	 * @str:	the string to search through.
 	 * @c:		the character to find.
-	 * 
+	 *
 	 * Returns the index of the first occurrence of the character, if found.  Otherwise -1 is returned.
-	 * 
+	 *
 	 * Return value: the index of the first occurrence of the character if found or -1 otherwise.
 	 * */
 	static unsigned int cc_utf8_find_char(std::vector<unsigned short> str, unsigned short c)
@@ -158,7 +158,7 @@ namespace cocos2d{
 	/*
 	 * @str:	the string to search through.
 	 * @c:		the character to not look for.
-	 * 
+	 *
 	 * Return value: the index of the last character that is not c.
 	 * */
 	static unsigned int cc_utf8_find_last_not_char(std::vector<unsigned short> str, unsigned short c)
@@ -175,9 +175,9 @@ namespace cocos2d{
 	/*
 	 * @str:	the string to trim
 	 * @index:	the index to start trimming from.
-	 * 
+	 *
 	 * Trims str st str=[0, index) after the operation.
-	 * 
+	 *
 	 * Return value: the trimmed string.
 	 * */
 	static void cc_utf8_trim_from(std::vector<unsigned short>* str, int index)
@@ -191,9 +191,9 @@ namespace cocos2d{
 
 	/*
 	 * @ch is the unicode character whitespace?
-	 * 
+	 *
 	 * Reference: http://en.wikipedia.org/wiki/Whitespace_character#Unicode
-	 * 
+	 *
 	 * Return value: weather the character is a whitespace character.
 	 * */
 	static bool isspace_unicode(unsigned short ch)
@@ -312,9 +312,9 @@ namespace cocos2d{
 	/*
 	 * cc_utf8_from_cstr:
 	 * @str_old: pointer to the start of a C string.
-	 * 
+	 *
 	 * Creates a utf8 string from a cstring.
-	 * 
+	 *
 	 * Return value: the newly created utf8 string.
 	 * */
 	static unsigned short* cc_utf8_from_cstr(const char* str_old)
@@ -381,7 +381,7 @@ namespace cocos2d{
 	//
 	// Equal function for targetSet.
 	typedef struct _KerningHashElement
-	{	
+	{
 		int				key;		// key for the hash. 16-bit for 1st element, 16-bit for 2nd element
 		int				amount;
 		UT_hash_handle	hh;
@@ -436,16 +436,16 @@ namespace cocos2d{
 	void CCBMFontConfiguration::purgeKerningDictionary()
 	{
 		tKerningHashElement *current;
-		while(m_pKerningDictionary) 
+		while(m_pKerningDictionary)
 		{
-			current = m_pKerningDictionary; 
+			current = m_pKerningDictionary;
 			HASH_DEL(m_pKerningDictionary,current);
 			free(current);
 		}
 	}
 
 	void CCBMFontConfiguration::parseConfigFile(const char *controlFile)
-	{	
+	{
 		std::string fullpath = CCFileUtils::fullPathFromRelativePath(controlFile);
 
 		CCFileData data(fullpath.c_str(), "rb");
@@ -479,7 +479,7 @@ namespace cocos2d{
 				strLeft.erase();
 			}
 
-			if(line.substr(0,strlen("info face")) == "info face") 
+			if(line.substr(0,strlen("info face")) == "info face")
 			{
 				// XXX: info parsing is incomplete
 				// Not needed for the Hiero editors, but needed for the AngelCode editor
@@ -531,7 +531,7 @@ namespace cocos2d{
 		int index2 = line.find(' ', index);
 		std::string value = line.substr(index, index2-index);
 		CCAssert(atoi(value.c_str()) == 0, "LabelBMFont file could not be found");
-		// file 
+		// file
 		index = line.find('"')+1;
 		index2 = line.find('"', index);
 		value = line.substr(index, index2-index);
@@ -587,10 +587,10 @@ namespace cocos2d{
 	}
 
 	void CCBMFontConfiguration::parseCharacterDefinition(std::string line, ccBMFontDef *characterDefinition)
-	{	
+	{
 		//////////////////////////////////////////////////////////////////////////
 		// line to parse:
-		// char id=32   x=0     y=0     width=0     height=0     xoffset=0     yoffset=44    xadvance=14     page=0  chnl=0 
+		// char id=32   x=0     y=0     width=0     height=0     xoffset=0     yoffset=44    xadvance=14     page=0  chnl=0
 		//////////////////////////////////////////////////////////////////////////
 
 		// Character ID
@@ -641,25 +641,25 @@ namespace cocos2d{
 		// When using uthash there is not need to parse the capacity.
 
 		//	CCAssert(!kerningDictionary, @"dictionary already initialized");
-		//	
+		//
 		//	// Break the values for this line up using =
 		//	CCMutableArray *values = [line componentsSeparatedByString:@"="];
-		//	NSEnumerator *nse = [values objectEnumerator];	
+		//	NSEnumerator *nse = [values objectEnumerator];
 		//	CCString *propertyValue;
-		//	
+		//
 		//	// We need to move past the first entry in the array before we start assigning values
 		//	[nse nextObject];
-		//	
+		//
 		//	// count
 		//	propertyValue = [nse nextObject];
 		//	int capacity = [propertyValue intValue];
-		//	
+		//
 		//	if( capacity != -1 )
 		//		kerningDictionary = ccHashSetNew(capacity, targetSetEql);
 	}
 
 	void CCBMFontConfiguration::parseKerningEntry(std::string line)
-	{		
+	{
 		//////////////////////////////////////////////////////////////////////////
 		// line to parse:
 		// kerning first=121  second=44  amount=-7
@@ -725,10 +725,14 @@ namespace cocos2d{
 	{
 		return initWithString(theString, fntFile, CCTextAlignmentCenter, 0);
 	}
-
+	const char*  CCLabelBMFont::getFntFile(){
+	    return  m_pfntFile!=NULL?m_pfntFile->c_str():NULL;
+	}
 	bool CCLabelBMFont::initWithString(const char *theString, const char *fntFile, CCTextAlignment alignment
 		, float width)
 	{
+	    CC_SAFE_DELETE(m_pfntFile);
+	    m_pfntFile  = new std::string(fntFile);
 		CCAssert(theString != NULL, "");
 		CC_SAFE_RELEASE(m_pConfiguration);// allow re-init
 		m_pConfiguration = FNTConfigLoadFile(fntFile);
@@ -755,6 +759,7 @@ namespace cocos2d{
 	{
 		CC_SAFE_DELETE(m_sString);
 		CC_SAFE_RELEASE(m_pConfiguration);
+		CC_SAFE_DELETE(m_pfntFile);
 	}
 
 	// LabelBMFont - Atlas generation
@@ -765,7 +770,7 @@ namespace cocos2d{
 
 		if( m_pConfiguration->m_pKerningDictionary ) {
 			tKerningHashElement *element = NULL;
-			HASH_FIND_INT(m_pConfiguration->m_pKerningDictionary, &key, element);		
+			HASH_FIND_INT(m_pConfiguration->m_pKerningDictionary, &key, element);
 			if(element)
 				ret = element->amount;
 		}
@@ -817,7 +822,7 @@ namespace cocos2d{
 
             std::map<unsigned int, ccBMFontDef>::iterator it = m_pConfiguration->m_pBitmapFontArray->find(c);
             CCAssert(it != m_pConfiguration->m_pBitmapFontArray->end(), "LabelBMFont: character is not supported");
-            
+
 			kerningAmount = this->kerningAmountForFirst(prev, c);
 
 			const ccBMFontDef& fontDef = (*(m_pConfiguration->m_pBitmapFontArray))[c];
@@ -846,7 +851,7 @@ namespace cocos2d{
 
             float yOffset = (float)(m_pConfiguration->m_uCommonHeight) - fontDef.yOffset;
 			fontChar->setPositionInPixels( ccp( nextFontPositionX + fontDef.xOffset + fontDef.rect.size.width / 2.0f + kerningAmount,
-				                                (float) nextFontPositionY + yOffset - rect.size.height/2.0f ) );		
+				                                (float) nextFontPositionY + yOffset - rect.size.height/2.0f ) );
 
 			//		NSLog(@"position.y: %f", fontChar.position.y);
 
@@ -1103,7 +1108,7 @@ namespace cocos2d{
 				}
 
 				// Out of bounds.
-				if (characterSprite->getPosition().x + characterSprite->getContentSize().width / 2.0f - startOfLine 
+				if (characterSprite->getPosition().x + characterSprite->getContentSize().width / 2.0f - startOfLine
 					> m_fWidth )
 				{
 					if (!m_bLineBreakWithoutSpaces)

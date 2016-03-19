@@ -10,13 +10,7 @@
 #include "extensions/ExtensionMacros.h"
 #include "extensions/Cocos2dHelper.h"
 #include "cocos2d.h"
-#if USING_COCOS2D_VERSION == COCOS2D_VERSION_1X
-#include "extensions/GUI/CCScrollView.h"
-#endif
-#if USING_COCOS2D_VERSION == COCOS2D_VERSION_3X
 #include "extensions/GUI/CCScrollView/CCScrollView.h"
-#include "2d/CCLayer.h"
-#endif
 
 
 #include <vector>

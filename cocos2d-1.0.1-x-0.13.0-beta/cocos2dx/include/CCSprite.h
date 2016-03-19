@@ -112,11 +112,11 @@ public:
 
 	/** returns whether or not the texture rectangle is rotated */
 	inline bool isTextureRectRotated(void) { return m_bRectRotated; }
-	
+
 	/** Set the index used on the TextureAtlas. */
 	inline unsigned int getAtlasIndex(void) { return m_uAtlasIndex; }
 	/** Set the index used on the TextureAtlas.
-	@warning Don't modify this value unless you know what you are doing 
+	@warning Don't modify this value unless you know what you are doing
 	*/
 	inline void setAtlasIndex(unsigned int uAtlasIndex) { m_uAtlasIndex = uAtlasIndex; }
 
@@ -169,6 +169,8 @@ public:
 	 */
 	static CCSprite* spriteWithTexture(CCTexture2D *pTexture, const CCRect& rect);
 
+
+
 	/** Creates an sprite with a texture, a rect and offset. */
     static CCSprite* spriteWithTexture(CCTexture2D *pTexture, const CCRect& rect, const CCPoint& offset);
 
@@ -192,7 +194,7 @@ public:
 	 The offset will be (0,0).
 	 */
 	static CCSprite* spriteWithFile(const char *pszFileName, const CCRect& rect);
-    
+
 	/** Creates an sprite with an CCBatchNode and a rect
 	*/
 	static CCSprite* spriteWithBatchNode(CCSpriteBatchNode *batchNode, const CCRect& rect);
@@ -223,7 +225,7 @@ public:
 	virtual void setIsVisible(bool bVisible);
 	void setFlipX(bool bFlipX);
 	void setFlipY(bool bFlipY);
-	/** whether or not the sprite is flipped horizontally. 
+	/** whether or not the sprite is flipped horizontally.
 	It only flips the texture of the sprite, and not the texture of the sprite's children.
 	Also, flipping the texture doesn't alter the anchorPoint.
 	If you want to flip the anchorPoint too, and/or to flip the children too use:
@@ -260,6 +262,8 @@ public:
 	 The offset will be (0,0).
 	 */
     bool initWithTexture(CCTexture2D *pTexture, const CCRect& rect);
+
+    bool initWithTexture(CCTexture2D *pTexture, const CCRect& rect, bool rotated);
 
 	// Initializes an sprite with an sprite frame.
     bool initWithSpriteFrame(CCSpriteFrame *pSpriteFrame);
@@ -381,6 +385,6 @@ protected:
 	bool m_bFlipX;
 	bool m_bFlipY;
 };
-}//namespace   cocos2d 
+}//namespace   cocos2d
 
 #endif // __SPITE_NODE_CCSPRITE_H__

@@ -50,6 +50,10 @@ namespace cocos2d{
 		/** initializes the CCLabelTTF with a font name and font size */
 		bool initWithString(const char *label, const char *fontName, float fontSize);
 
+		void setFontSize(float fontSize);
+		const char* getFontName();
+		float getFontSize();
+
 		/** changes the string to render
 		* @warning Changing the string is as expensive as creating a new CCLabelTTF. To obtain better performance use CCLabelAtlas
 		*/

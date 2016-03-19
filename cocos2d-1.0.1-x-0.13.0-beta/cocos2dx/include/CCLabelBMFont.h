@@ -153,16 +153,18 @@ namespace cocos2d{
 		// string to render
 		unsigned short* m_sString;
 		std::string m_sString_initial;
+		std::string* m_pfntFile;
 		CCBMFontConfiguration *m_pConfiguration;
 		CCTextAlignment m_pAlignment;
 		float m_fWidth;
 		bool m_bLineBreakWithoutSpaces;
 	public:
 		CCLabelBMFont()
-			: m_cOpacity(0)           
+			: m_cOpacity(0)
 			, m_bIsOpacityModifyRGB(false)
             , m_pConfiguration(NULL)
 			, m_bLineBreakWithoutSpaces(false)
+	        , m_pfntFile(NULL)
 		{}
 		virtual ~CCLabelBMFont();
 		/** Purges the cached data.
@@ -184,6 +186,7 @@ namespace cocos2d{
 		virtual void setString(const char *label, bool fromUpdate);
 		virtual void updateString(bool fromUpdate);
 		virtual const char* getString(void);
+		const char*  getFntFile();
         virtual void setCString(const char *label);
 		virtual void setAnchorPoint(const CCPoint& var);
 		virtual void updateLabel();

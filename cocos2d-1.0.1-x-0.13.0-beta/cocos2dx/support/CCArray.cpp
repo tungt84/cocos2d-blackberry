@@ -40,7 +40,7 @@ CCArray* CCArray::array()
     {
         CC_SAFE_DELETE(pArray);
     }
-    
+
     return pArray;
 }
 
@@ -90,14 +90,14 @@ bool CCArray::initWithCapacity(unsigned int capacity)
 bool CCArray::initWithArray(CCArray* otherArray)
 {
     bool bRet = false;
-    do 
+    do
     {
         CC_BREAK_IF(! initWithCapacity(otherArray->data->num));
 
         addObjectsFromArray(otherArray);
         bRet = true;
     } while (0);
-    
+
     return bRet;
 }
 
@@ -168,6 +168,9 @@ void CCArray::removeObject(CCObject* object)
 {
     ccArrayRemoveObject(data, object);
 }
+void CCArray::removeObject(CCObject* object,bool bReleaseObj){
+    ccArrayRemoveObject(data, object,bReleaseObj);
+}
 
 void CCArray::removeObjectAtIndex(unsigned int index)
 {
@@ -221,7 +224,7 @@ void CCArray::reverseObjects()
     if (data->num > 1)
     {
         //floor it since in case of a oneven number the number of swaps stays the same
-        int count = (int) floorf(data->num/2.f); 
+        int count = (int) floorf(data->num/2.f);
         unsigned int maxIndex = data->num - 1;
 
         for (int i = 0; i < count ; i++)

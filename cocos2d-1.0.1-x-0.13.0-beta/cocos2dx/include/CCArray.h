@@ -102,6 +102,8 @@ public:
     void removeLastObject();
 	/** Remove a certain object */
     void removeObject(CCObject* object);
+    void removeObject(CCObject* object,bool bReleaseObj);
+
 	/** Remove an element with a certain index */
     void removeObjectAtIndex(unsigned int index);
 	/** Remove all elements */

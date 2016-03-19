@@ -57,7 +57,7 @@ struct transformValues_ {
 	float	rotation;
     CCPoint skew;		// skew x and y
 	CCPoint ap;			// anchor point in pixels
-	bool    visible;    
+	bool    visible;
 };
 
 
@@ -214,9 +214,9 @@ bool CCSprite::init(void)
 	m_sQuad.tr.colors = tmpColor;
 
 	// Atlas: Vertex
-		
+
 	// updated in "useSelfRender"
-		
+
 	// Atlas: TexCoords
 	setTextureRectInPixels(CCRectZero, false, CCSizeZero);
 
@@ -234,13 +234,60 @@ bool CCSprite::initWithTexture(CCTexture2D *pTexture, const CCRect& rect)
 	return true;
 }
 
+// designated initializer
+bool CCSprite::initWithTexture(CCTexture2D *pTexture, const CCRect& rect, bool rotated)
+{
+    m_pobBatchNode = NULL;
+    // shader program
+    //setShaderProgram(CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor));
+
+    m_bRecursiveDirty = false;
+    setDirty(false);
+
+    m_bOpacityModifyRGB = true;
+    m_nOpacity = 255;
+    m_sColor = m_sColorUnmodified = ccWHITE;
+
+    m_sBlendFunc.src = CC_BLEND_SRC;
+    m_sBlendFunc.dst = CC_BLEND_DST;
+
+    m_bFlipX = m_bFlipY = false;
+
+    // default transform anchor: center
+    setAnchorPoint(ccp(0.5f, 0.5f));
+
+    // zwoptex default values
+    //m_obOffsetPosition = CCPointZero;
+
+    m_bHasChildren = false;
+
+    // clean the Quad
+    memset(&m_sQuad, 0, sizeof(m_sQuad));
+
+    // Atlas: Color
+    ccColor4B tmpColor = { 255, 255, 255, 255 };
+    m_sQuad.bl.colors = tmpColor;
+    m_sQuad.br.colors = tmpColor;
+    m_sQuad.tl.colors = tmpColor;
+    m_sQuad.tr.colors = tmpColor;
+
+    // update texture (calls updateBlendFunc)
+    setTexture(pTexture);
+    setTextureRectInPixels(rect, rotated, rect.size);
+
+    // by default use "Self Render".
+    // if the sprite is added to a batchnode, then it will automatically switch to "batchnode Render"
+    //setBatchNode(NULL);
+
+    return true;
+}
 bool CCSprite::initWithTexture(CCTexture2D *pTexture)
 {
 	CCAssert(pTexture != NULL, "");
 
 	CCRect rect = CCRectZero;
 	rect.size = pTexture->getContentSize();
-	
+
 	return initWithTexture(pTexture, rect);
 }
 
@@ -258,7 +305,7 @@ bool CCSprite::initWithFile(const char *pszFilename)
 
 	// don't release here.
 	// when load texture failed, it's better to get a "transparent" sprite then a crashed program
-	// this->release(); 
+	// this->release();
 	return false;
 }
 
@@ -274,7 +321,7 @@ bool CCSprite::initWithFile(const char *pszFilename, const CCRect& rect)
 
 	// don't release here.
 	// when load texture failed, it's better to get a "transparent" sprite then a crashed program
-	// this->release(); 
+	// this->release();
 	return false;
 }
 
@@ -397,7 +444,7 @@ void CCSprite::setTextureRectInPixels(const CCRect& rect, bool rotated, const CC
 	else
 	{
 		// self rendering
-		
+
 		// Atlas: Vertex
 		float x1 = 0 + m_obOffsetPositionInPixels.x;
 		float y1 = 0 + m_obOffsetPositionInPixels.y;
@@ -534,7 +581,7 @@ void CCSprite::updateTransform(void)
             matrix = CCAffineTransformConcat(skewMatrix, matrix);
         }
 		matrix = CCAffineTransformTranslate(matrix, -m_tAnchorPointInPixels.x, -m_tAnchorPointInPixels.y);
-	} else // parent_ != batchNode_ 
+	} else // parent_ != batchNode_
 	{
 		// else do affine transformation according to the HonorParentTransform
 		matrix = CCAffineTransformIdentity;
@@ -578,7 +625,7 @@ void CCSprite::updateTransform(void)
                 newMatrix = CCAffineTransformConcat(skew, newMatrix);
             }
 
-			if( prevHonor & CC_HONOR_PARENT_TRANSFORM_SCALE ) 
+			if( prevHonor & CC_HONOR_PARENT_TRANSFORM_SCALE )
 			{
 				newMatrix = CCAffineTransformScale(newMatrix, tv.scale.x, tv.scale.y);
 			}
@@ -605,20 +652,20 @@ void CCSprite::updateTransform(void)
 	float y2 = y1 + size.height;
     float x = matrix.tx;
 	float y = matrix.ty;
-	
+
 	float cr = matrix.a;
 	float sr = matrix.b;
 	float cr2 = matrix.d;
 	float sr2 = -matrix.c;
 	float ax = x1 * cr - y1 * sr2 + x;
 	float ay = x1 * sr + y1 * cr2 + y;
-	
+
 	float bx = x2 * cr - y1 * sr2 + x;
 	float by = x2 * sr + y1 * cr2 + y;
-	
+
 	float cx = x2 * cr - y2 * sr2 + x;
 	float cy = x2 * sr + y2 * cr2 + y;
-	
+
 	float dx = x1 * cr - y2 * sr2 + x;
 	float dy = x1 * sr + y2 * cr2 + y;
 
@@ -681,13 +728,13 @@ void CCSprite::draw(void)
 	// color
 	diff = offsetof( ccV3F_C4B_T2F, colors);
 	glColorPointer(4, GL_UNSIGNED_BYTE, kQuadSize, (void*)(offset + diff));
-	
+
 	// tex coords
 	diff = offsetof( ccV3F_C4B_T2F, texCoords);
 	glTexCoordPointer(2, GL_FLOAT, kQuadSize, (void*)(offset + diff));
-	
+
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	
+
 	if( newBlend )
 	{
 		glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST);
@@ -772,7 +819,7 @@ void CCSprite::removeChild(CCNode *pChild, bool bCleanup)
 	}
 
 	CCNode::removeChild(pChild, bCleanup);
-	
+
 }
 
 void CCSprite::removeAllChildrenWithCleanup(bool bCleanup)
@@ -791,7 +838,7 @@ void CCSprite::removeAllChildrenWithCleanup(bool bCleanup)
 	}
 
 	CCNode::removeAllChildrenWithCleanup(bCleanup);
-	
+
 	m_bHasChildren = false;
 }
 
@@ -1108,4 +1155,4 @@ CCTexture2D* CCSprite::getTexture(void)
 {
 	return m_pobTexture;
 }
-}//namespace   cocos2d 
+}//namespace   cocos2d
